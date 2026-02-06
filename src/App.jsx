@@ -14,7 +14,7 @@ import "./App.css";
 
 // --- 3Dモデルコンポーネント ---
 function Model() {
-  const { nodes } = useGLTF("/model.glb");
+  const { nodes } = useGLTF("model.glb");
   const firstMesh = Object.values(nodes).find((node) => node.isMesh);
   
   const meshRef = useRef();
@@ -267,7 +267,7 @@ const ProfileView = () => {
           viewport={{ once: true, amount: 0.3 }}
         >
           {/* publicフォルダに star.png がある前提 */}
-          <img src="/star.png" alt="Ichihashi Toui" className="profile-img" />
+          <img src="star.png" alt="Ichihashi Toui" className="profile-img" />
         </motion.div>
 
         <div className="profile-info">
@@ -315,42 +315,42 @@ const GalleryView = () => {
         {/* 01. メイン（左上・縦長） */}
         <div className="gallery-item item-main">
           <div className="img-box">
-            <img src="/gallery-12.jpg" alt="Work 01" />
+            <img src="gallery-12.jpg" alt="Work 01" />
           </div>
         </div>
 
         {/* 02. サブ1（右上・横長） */}
         <div className="gallery-item item-sub1">
           <div className="img-box">
-            <img src="/gallery-10.jpg" alt="Work 02" />
+            <img src="gallery-10.jpg" alt="Work 02" />
           </div>
         </div>
 
         {/* 03. サブ2（右下へ移動・正方形） */}
         <div className="gallery-item item-sub2">
           <div className="img-box">
-            <img src="/gallery-23.jpg" alt="Work 03" />
+            <img src="gallery-23.jpg" alt="Work 03" />
           </div>
         </div>
 
         {/* 04. サブ3（左下・少し小さめ縦長） */}
         <div className="gallery-item item-sub3">
           <div className="img-box">
-            <img src="/gallery-14.jpg" alt="Work 04" />
+            <img src="gallery-14.jpg" alt="Work 04" />
           </div>
         </div>
 
         {/* 05. サブ4（中央・横長・重ねるアクセント用） */}
         <div className="gallery-item item-sub4">
           <div className="img-box">
-            <img src="/gallery-17.jpg" alt="Work 05" />
+            <img src="gallery-17.jpg" alt="Work 05" />
           </div>
         </div>
 
         {/* 06. サブ5（右側中間・小さめ正方形・隙間埋め） */}
         <div className="gallery-item item-sub5">
           <div className="img-box">
-            <img src="/gallery-06.jpg" alt="Work 06" />
+            <img src="gallery-06.jpg" alt="Work 06" />
           </div>
         </div>
 
@@ -384,7 +384,7 @@ export default function App() {
 
       <Canvas dpr={[1, 1.5]} camera={{ position: [0, 0, 12], fov: 50 }}>
         {/* pagesは11のままでOKです */}
-        <ScrollControls pages={6.6} damping={0.1}>
+        <ScrollControls pages={6.7} damping={0.1}>
           
           <BackgroundText />
           <Model />
@@ -404,7 +404,7 @@ export default function App() {
         
         <ambientLight intensity={0.5} />
         <directionalLight position={[10, 10, 5]} intensity={1} color="#ffffff" />
-        <Environment files="/blender-env.jpeg" background={false} />
+        <Environment files="blender-env.jpeg" background={false} />
       </Canvas>
     </div>
   );
