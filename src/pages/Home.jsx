@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef, useState, useEffect, Suspense } from "react"; // ★Suspense追加
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { 
   useGLTF, 
@@ -7,10 +7,10 @@ import {
   ScrollControls, 
   Scroll,         
   useScroll,
-  Text,
-  PresentationControls
+  Text
 } from "@react-three/drei";
 import { motion } from "framer-motion"; 
+import { useNavigate } from "react-router-dom"; // ★LinkではなくuseNavigateを使う
 import "../App.css";
 
 // --- 3Dモデルコンポーネント ---
@@ -22,35 +22,27 @@ function Model() {
   const materialRef = useRef();
   const scroll = useScroll();
 
-  // ★回転速度の管理（初期値: Y軸に少しだけ回しておく）
-  // velocity: 現在の回転スピード
   const velocity = useRef({ x: 0, y: 0.5 }); 
-  // isDragging: 触っている最中かどうか
   const isDragging = useRef(false);
-  // prevPointer: 1フレーム前の指の位置
   const prevPointer = useRef({ x: 0, y: 0 });
 
   useFrame((state, delta) => {
     if (!meshRef.current || !materialRef.current) return;
     
-    // --- 1. 質感・鼓動・スクロール（演出部分） ---
     const t = state.clock.getElapsedTime();
     const scrollOffset = scroll.offset; 
 
-    // 鼓動
     const speed = 5.0;
     let noise = (Math.sin(t * speed) + Math.sin(t * speed * 1.3)) / 2;
     noise = Math.max(0, noise);
     const pulse = Math.pow(noise, 6);
 
-    // サイズ（スマホ判定は省略し、レスポンシブな計算を入れるのもありですが、一旦シンプルに）
     const isMobile = window.innerWidth <= 1024;
     const baseScale = isMobile ? 1.1 : 1.5; 
     const scrollScale = scrollOffset * 12.0; 
     const currentScale = baseScale + (pulse * 0.2) + scrollScale;
     meshRef.current.scale.set(currentScale, currentScale, currentScale);
     
-    // 位置・質感
     meshRef.current.position.y = scrollOffset * 1.5;
     
     const targetMetalness = 1.0 - (scrollOffset * 1.2); 
@@ -59,57 +51,34 @@ function Model() {
     materialRef.current.roughness = Math.min(0.8, targetRoughness);
     materialRef.current.distort = 0.3 + (pulse * 0.5) + (scrollOffset * 1.0);
 
-
-    // --- 2. 回転ロジック（ここが核心！） ---
-    
-    // 指でドラッグしていない時だけ、慣性と自動回転を適用
     if (!isDragging.current) {
-      // 減速処理（摩擦）：毎フレーム 0.95倍 してスピードを落とす
       velocity.current.x *= 0.95;
       velocity.current.y *= 0.95;
 
-      // ★最低速度の維持（止まらないようにする）
-      const minSpeed = 0.5; // この数字で「アイドリング時の速さ」が決まります
-      
-      // X軸（縦回転）は自然に止める
+      const minSpeed = 0.5; 
       if (Math.abs(velocity.current.x) < 0.01) velocity.current.x = 0;
-
-      // Y軸（横回転）は minSpeed 以下になったら、その速度をキープする
       if (Math.abs(velocity.current.y) < minSpeed) {
-        // 現在の方向（プラスかマイナスか）を保ったまま、minSpeedにする
-        const direction = Math.sign(velocity.current.y) || 1; // 0なら1(正回転)
+        const direction = Math.sign(velocity.current.y) || 1;
         velocity.current.y = minSpeed * direction;
       }
     }
 
-    // 計算した速度を、実際の回転に適用（deltaを掛けて滑らかに）
     meshRef.current.rotation.x += velocity.current.x * delta;
     meshRef.current.rotation.y += velocity.current.y * delta;
   });
 
-  // --- 3. 操作イベントハンドラ ---
-  
   const onPointerDown = (e) => {
-    // 触った瞬間フラグを立てる
     isDragging.current = true;
-    // 現在の指の位置を記憶
     prevPointer.current = { x: e.clientX, y: e.clientY };
-    // ブラウザのスクロール等を防ぐ（タッチ操作を独占）
     e.target.setPointerCapture(e.pointerId);
   };
 
   const onPointerMove = (e) => {
     if (isDragging.current) {
-      // 移動量を計算
       const deltaX = e.clientX - prevPointer.current.x;
       const deltaY = e.clientY - prevPointer.current.y;
-
-      // 移動量＝回転速度として適用（感度はここで調整）
-      // Y軸回転はXの移動、X軸回転はYの移動に対応
-      velocity.current.y = deltaX * 0.25; // 横に動かすとY軸が回る
-      velocity.current.x = deltaY * 0.25; // 縦に動かすとX軸が回る
-
-      // 次のフレームのために位置を更新
+      velocity.current.y = deltaX * 0.25; 
+      velocity.current.x = deltaY * 0.25; 
       prevPointer.current = { x: e.clientX, y: e.clientY };
     }
   };
@@ -117,8 +86,6 @@ function Model() {
   const onPointerUp = (e) => {
     isDragging.current = false;
     e.target.releasePointerCapture(e.pointerId);
-    // 指を離した瞬間の速度(velocity)がそのまま useFrame に引き継がれ、
-    // 慣性で回り続けます
   };
 
   if (!firstMesh) return null;
@@ -128,11 +95,10 @@ function Model() {
       <mesh 
         ref={meshRef} 
         geometry={firstMesh.geometry}
-        // イベントをメッシュに直接つける
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
-        onPointerLeave={onPointerUp} // 画面外に出た時も離した扱いに
+        onPointerLeave={onPointerUp}
       >
         <MeshDistortMaterial
           ref={materialRef} 
@@ -150,27 +116,17 @@ function Model() {
   );
 }
 
-// --- 背景テキストコンポーネント ---
+// --- 背景テキスト ---
 const BackgroundText = () => {
-  // 1. 3D空間のサイズ（配置計算用）
-  const { width, height } = useThree((state) => 
-    state.viewport.getCurrentViewport(state.camera, [0, 0, -2])
-  );
-  
-  // 2. ★修正: 画面の「ピクセルサイズ」を取得（判定用）
-  const { size } = useThree(); 
+  const { width, height, size } = useThree((state) => ({
+    width: state.viewport.width,
+    height: state.viewport.height,
+    size: state.size
+  }));
 
-  // ★修正: CSSのメディアクエリと同じ「768px」で判定する！
-  // これでPC/スマホの切り替えタイミングがCSSと完全に一致します
   const isMobile = size.width <= 768;
-
   const topMarginVh = isMobile ? 0.17 : 0.05; 
-  
-  // スマホの時は文字を小さく (0.11倍)、PCなら (0.18倍)
-  const responsiveSize = isMobile 
-    ? width * 0.29
-    : Math.max(width * 0.18, 2.5);
-
+  const responsiveSize = isMobile ? width * 0.29 : Math.max(width * 0.18, 2.5);
   const marginPercentage = 0.035;
 
   const scroll = useScroll();
@@ -204,8 +160,8 @@ const BackgroundText = () => {
   );
 };
 
-// --- 各セクション ---
-const FirstView = () => (
+// --- ★修正: navigateを受け取るように変更 ---
+const FirstView = ({ navigate }) => (
   <div className="section-first">
     <div className="layer-front">
       <div className="left-section">
@@ -228,16 +184,34 @@ const FirstView = () => (
         <ul className="nav-list">
           <li className="nav-item">
             <span className="nav-number">01</span>
-            {/* リンクに変更 */}
-            <Link to="/contents" className="nav-text">contents</Link>
+            {/* ★Linkの代わりにonClickで遷移させる */}
+            <div 
+              className="nav-text" 
+              onClick={() => navigate('/contents')} 
+              style={{ cursor: 'pointer' }}
+            >
+              contents
+            </div>
           </li>
           <li className="nav-item">
             <span className="nav-number">02</span>
-            <Link to="/profile" className="nav-text">profile</Link>
+            <div 
+              className="nav-text" 
+              onClick={() => navigate('/profile')} 
+              style={{ cursor: 'pointer' }}
+            >
+              profile
+            </div>
           </li>
           <li className="nav-item">
             <span className="nav-number">03</span>
-            <Link to="/gallery" className="nav-text">gallery</Link>
+            <div 
+              className="nav-text" 
+              onClick={() => navigate('/gallery')} 
+              style={{ cursor: 'pointer' }}
+            >
+              gallery
+            </div>
           </li>
         </ul>
       </div>
@@ -251,10 +225,10 @@ const ContentsView = () => {
     { id: "02", cat: "Web design", title: "ブランドサイト リデザイン", stack: "Figma / Blender / HTML / CSS / JavaScript", date: "2025-11" },
     { id: "03", cat: "Web design", title: "メンズ美容ブランド", stack: "Illustrator / Figma / Blender / HTML / CSS / JavaScript", date: "2026-12" },
     { id: "04", cat: "Web design", title: "コーポレートサイト改修", stack: "Figma / Blender / After Effects / HTML / CSS", date: "2025.10" },
-    { id: "01", cat: "graphic design", title: "A4展示会リーフレット", stack: "Illustrator / Photoshop / Blender", date: "2025-06" },
-    { id: "02", cat: "graphic design", title: "タイポグラフィアートワーク", stack: "Illustrator / Photoshop", date: "2025-09" },
-    { id: "03", cat: "graphic design", title: "自己表現コラージュ", stack: "Illustrator / Photoshop", date: "2025-07" },
-    { id: "04", cat: "graphic design", title: "危険物事故防止ポスター", stack: "Illustrator / Photoshop / Blender", date: "2025-11" },
+    { id: "05", cat: "graphic design", title: "A4展示会リーフレット", stack: "Illustrator / Photoshop / Blender", date: "2025-06" },
+    { id: "06", cat: "graphic design", title: "タイポグラフィアートワーク", stack: "Illustrator / Photoshop", date: "2025-09" },
+    { id: "07", cat: "graphic design", title: "自己表現コラージュ", stack: "Illustrator / Photoshop", date: "2025-07" },
+    { id: "08", cat: "graphic design", title: "危険物事故防止ポスター", stack: "Illustrator / Photoshop / Blender", date: "2025-11" },
   ];
 
   return (
@@ -283,6 +257,9 @@ const ContentsView = () => {
   );
 };
 
+// ... ProfileView, GalleryView, Footer, ContentWrapper は変更なしのため省略可能ですが、
+// ... そのまま既存のコードを使ってください。
+// (念のため、省略せず既存のままでOKです)
 const ProfileView = () => (
   <div className="section-profile">
     <h3 className="section-title">profile</h3>
@@ -346,7 +323,6 @@ const Footer = () => (
   </footer>
 );
 
-// --- 自動高さ計算ラッパー ---
 const ContentWrapper = ({ setPages, children }) => {
   const ref = useRef();
   useEffect(() => {
@@ -365,7 +341,9 @@ const ContentWrapper = ({ setPages, children }) => {
 
 // --- Main App ---
 export default function Home() {
-  const [pages, setPages] = useState(7); 
+  const [pages, setPages] = useState(7);
+  // ★重要: Canvasの外で作った「遷移機能」を中へ渡す準備
+  const navigate = useNavigate();
 
   return (
     <div className="container">
@@ -378,29 +356,30 @@ export default function Home() {
       <Canvas 
         dpr={[1, 1.5]} 
         camera={{ position: [0, 0, 12], fov: 50 }}
-        /* ★重要：touchAction: 'pan-y' に設定！ */
-        /* これにより「縦スワイプはスクロール」「横スワイプはCanvas操作」にブラウザが振り分けてくれます */
         style={{ touchAction: 'pan-y' }} 
       >
-        <ScrollControls pages={pages} damping={0.1}>
-          <BackgroundText />
-          <Model />
+        {/* ★Suspenseで囲む（読み込み待ちの保護） */}
+        <Suspense fallback={null}>
+          <ScrollControls pages={pages} damping={0.1}>
+            <BackgroundText />
+            <Model />
+            
+            <Scroll html style={{ width: '100%', height: '100%', zIndex: 10, pointerEvents: 'none' }}>
+              <ContentWrapper setPages={setPages}>
+                {/* ★navigate関数をPropsとして渡す */}
+                <FirstView navigate={navigate} />
+                <ContentsView />
+                <ProfileView />
+                <GalleryView />
+                <Footer />
+              </ContentWrapper>
+            </Scroll>
+          </ScrollControls>
           
-          {/* pointerEvents: 'none' でHTMLレイヤーを貫通させ、下のモデルに触れるようにする */}
-          <Scroll html style={{ width: '100%', height: '100%', zIndex: 10, pointerEvents: 'none' }}>
-            <ContentWrapper setPages={setPages}>
-              <FirstView />
-              <ContentsView />
-              <ProfileView />
-              <GalleryView />
-              <Footer />
-            </ContentWrapper>
-          </Scroll>
-        </ScrollControls>
-        
-        <ambientLight intensity={0.5} />
-        <directionalLight position={[10, 10, 5]} intensity={1} color="#ffffff" />
-        <Environment files={import.meta.env.BASE_URL + "blender-env.jpeg"} background={false} />
+          <ambientLight intensity={0.5} />
+          <directionalLight position={[10, 10, 5]} intensity={1} color="#ffffff" />
+          <Environment files={import.meta.env.BASE_URL + "blender-env.jpeg"} background={false} />
+        </Suspense>
       </Canvas>
     </div>
   );
