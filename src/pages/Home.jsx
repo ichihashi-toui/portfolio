@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect, Suspense } from "react"; // ★Suspense追加
+import React, { useRef, useState, useEffect } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { 
   useGLTF, 
@@ -7,10 +7,11 @@ import {
   ScrollControls, 
   Scroll,         
   useScroll,
-  Text
+  Text,
+  PresentationControls
 } from "@react-three/drei";
 import { motion } from "framer-motion"; 
-import { useNavigate } from "react-router-dom"; // ★LinkではなくuseNavigateを使う
+import { useNavigate } from "react-router-dom"; // ★追加: ページ遷移用
 import "../App.css";
 
 // --- 3Dモデルコンポーネント ---
@@ -22,6 +23,7 @@ function Model() {
   const materialRef = useRef();
   const scroll = useScroll();
 
+  // ★回転速度の管理
   const velocity = useRef({ x: 0, y: 0.5 }); 
   const isDragging = useRef(false);
   const prevPointer = useRef({ x: 0, y: 0 });
@@ -29,9 +31,11 @@ function Model() {
   useFrame((state, delta) => {
     if (!meshRef.current || !materialRef.current) return;
     
+    // --- 1. 質感・鼓動・スクロール（演出部分） ---
     const t = state.clock.getElapsedTime();
     const scrollOffset = scroll.offset; 
 
+    // 鼓動
     const speed = 5.0;
     let noise = (Math.sin(t * speed) + Math.sin(t * speed * 1.3)) / 2;
     noise = Math.max(0, noise);
@@ -51,14 +55,17 @@ function Model() {
     materialRef.current.roughness = Math.min(0.8, targetRoughness);
     materialRef.current.distort = 0.3 + (pulse * 0.5) + (scrollOffset * 1.0);
 
+
+    // --- 2. 回転ロジック ---
     if (!isDragging.current) {
       velocity.current.x *= 0.95;
       velocity.current.y *= 0.95;
 
       const minSpeed = 0.5; 
       if (Math.abs(velocity.current.x) < 0.01) velocity.current.x = 0;
+
       if (Math.abs(velocity.current.y) < minSpeed) {
-        const direction = Math.sign(velocity.current.y) || 1;
+        const direction = Math.sign(velocity.current.y) || 1; 
         velocity.current.y = minSpeed * direction;
       }
     }
@@ -67,6 +74,7 @@ function Model() {
     meshRef.current.rotation.y += velocity.current.y * delta;
   });
 
+  // --- 3. 操作イベントハンドラ ---
   const onPointerDown = (e) => {
     isDragging.current = true;
     prevPointer.current = { x: e.clientX, y: e.clientY };
@@ -98,7 +106,7 @@ function Model() {
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
-        onPointerLeave={onPointerUp}
+        onPointerLeave={onPointerUp} 
       >
         <MeshDistortMaterial
           ref={materialRef} 
@@ -116,14 +124,13 @@ function Model() {
   );
 }
 
-// --- 背景テキスト ---
+// --- 背景テキストコンポーネント ---
 const BackgroundText = () => {
-  const { width, height, size } = useThree((state) => ({
-    width: state.viewport.width,
-    height: state.viewport.height,
-    size: state.size
-  }));
-
+  const { width, height } = useThree((state) => 
+    state.viewport.getCurrentViewport(state.camera, [0, 0, -2])
+  );
+  
+  const { size } = useThree(); 
   const isMobile = size.width <= 768;
   const topMarginVh = isMobile ? 0.17 : 0.05; 
   const responsiveSize = isMobile ? width * 0.29 : Math.max(width * 0.18, 2.5);
@@ -160,7 +167,8 @@ const BackgroundText = () => {
   );
 };
 
-// --- ★修正: navigateを受け取るように変更 ---
+// --- 各セクション ---
+// ★修正: navigateを受け取る
 const FirstView = ({ navigate }) => (
   <div className="section-first">
     <div className="layer-front">
@@ -182,36 +190,18 @@ const FirstView = ({ navigate }) => (
       </div>
       <div className="right-section">
         <ul className="nav-list">
+          {/* ★修正: 各ページへの遷移を設定 */}
           <li className="nav-item">
             <span className="nav-number">01</span>
-            {/* ★Linkの代わりにonClickで遷移させる */}
-            <div 
-              className="nav-text" 
-              onClick={() => navigate('/contents')} 
-              style={{ cursor: 'pointer' }}
-            >
-              contents
-            </div>
+            <div className="nav-text" onClick={() => navigate('/contents')} style={{ cursor: 'pointer' }}>contents</div>
           </li>
           <li className="nav-item">
             <span className="nav-number">02</span>
-            <div 
-              className="nav-text" 
-              onClick={() => navigate('/profile')} 
-              style={{ cursor: 'pointer' }}
-            >
-              profile
-            </div>
+            <div className="nav-text" onClick={() => navigate('/profile')} style={{ cursor: 'pointer' }}>profile</div>
           </li>
           <li className="nav-item">
             <span className="nav-number">03</span>
-            <div 
-              className="nav-text" 
-              onClick={() => navigate('/gallery')} 
-              style={{ cursor: 'pointer' }}
-            >
-              gallery
-            </div>
+            <div className="nav-text" onClick={() => navigate('/gallery')} style={{ cursor: 'pointer' }}>gallery</div>
           </li>
         </ul>
       </div>
@@ -219,16 +209,18 @@ const FirstView = ({ navigate }) => (
   </div>
 );
 
-const ContentsView = () => {
+// ★修正: navigateを受け取り、リストをクリック可能にする
+const ContentsView = ({ navigate }) => {
+  // ★slugを追加して遷移先を指定
   const projects = [
-    { id: "01", cat: "Web design", title: "FOMO啓発サイト", stack: "Figma / HTML / CSS / JavaScript", date: "2026-01" },
-    { id: "02", cat: "Web design", title: "ブランドサイト リデザイン", stack: "Figma / Blender / HTML / CSS / JavaScript", date: "2025-11" },
-    { id: "03", cat: "Web design", title: "メンズ美容ブランド", stack: "Illustrator / Figma / Blender / HTML / CSS / JavaScript", date: "2026-12" },
-    { id: "04", cat: "Web design", title: "コーポレートサイト改修", stack: "Figma / Blender / After Effects / HTML / CSS", date: "2025.10" },
-    { id: "05", cat: "graphic design", title: "A4展示会リーフレット", stack: "Illustrator / Photoshop / Blender", date: "2025-06" },
-    { id: "06", cat: "graphic design", title: "タイポグラフィアートワーク", stack: "Illustrator / Photoshop", date: "2025-09" },
-    { id: "07", cat: "graphic design", title: "自己表現コラージュ", stack: "Illustrator / Photoshop", date: "2025-07" },
-    { id: "08", cat: "graphic design", title: "危険物事故防止ポスター", stack: "Illustrator / Photoshop / Blender", date: "2025-11" },
+    { id: "01", cat: "Web design", title: "FOMO啓発サイト", stack: "Figma / HTML / CSS / JavaScript", date: "2026-01", slug: "fomo" },
+    { id: "02", cat: "Web design", title: "ブランドサイト リデザイン", stack: "Figma / Blender / HTML / CSS / JavaScript", date: "2025-11", slug: "redesign" },
+    { id: "03", cat: "Web design", title: "メンズ美容ブランド", stack: "Illustrator / Figma / Blender / HTML / CSS / JavaScript", date: "2026-12", slug: "mens-cosme" },
+    { id: "04", cat: "Web design", title: "コーポレートサイト改修", stack: "Figma / Blender / After Effects / HTML / CSS", date: "2025.10", slug: "corporate" },
+    { id: "05", cat: "graphic design", title: "A4展示会リーフレット", stack: "Illustrator / Photoshop / Blender", date: "2025-06", slug: "leaflet" },
+    { id: "06", cat: "graphic design", title: "タイポグラフィアートワーク", stack: "Illustrator / Photoshop", date: "2025-09", slug: "typography" },
+    { id: "07", cat: "graphic design", title: "自己表現コラージュ", stack: "Illustrator / Photoshop", date: "2025-07", slug: "collage" },
+    { id: "08", cat: "graphic design", title: "危険物事故防止ポスター", stack: "Illustrator / Photoshop / Blender", date: "2025-11", slug: "poster" },
   ];
 
   return (
@@ -237,7 +229,13 @@ const ContentsView = () => {
       <div className="project-list-container">
         <ul className="project-list">
           {projects.map((item, index) => (
-            <li key={index} className="project-item">
+            <li 
+              key={index} 
+              className="project-item" 
+              // ★クリックで詳細ページへ遷移
+              onClick={() => navigate(`/project/${item.slug}`)}
+              style={{ cursor: 'pointer' }}
+            >
               <div className="item-header">
                 <span className="item-cat">{item.cat} {item.id}</span>
               </div>
@@ -257,9 +255,6 @@ const ContentsView = () => {
   );
 };
 
-// ... ProfileView, GalleryView, Footer, ContentWrapper は変更なしのため省略可能ですが、
-// ... そのまま既存のコードを使ってください。
-// (念のため、省略せず既存のままでOKです)
 const ProfileView = () => (
   <div className="section-profile">
     <h3 className="section-title">profile</h3>
@@ -323,6 +318,7 @@ const Footer = () => (
   </footer>
 );
 
+// --- 自動高さ計算ラッパー ---
 const ContentWrapper = ({ setPages, children }) => {
   const ref = useRef();
   useEffect(() => {
@@ -341,8 +337,8 @@ const ContentWrapper = ({ setPages, children }) => {
 
 // --- Main App ---
 export default function Home() {
-  const [pages, setPages] = useState(7);
-  // ★重要: Canvasの外で作った「遷移機能」を中へ渡す準備
+  const [pages, setPages] = useState(7); 
+  // ★追加: ページ遷移用のフック
   const navigate = useNavigate();
 
   return (
@@ -356,30 +352,29 @@ export default function Home() {
       <Canvas 
         dpr={[1, 1.5]} 
         camera={{ position: [0, 0, 12], fov: 50 }}
+        /* ★重要：touchAction: 'pan-y' に設定！ */
         style={{ touchAction: 'pan-y' }} 
       >
-        {/* ★Suspenseで囲む（読み込み待ちの保護） */}
-        <Suspense fallback={null}>
-          <ScrollControls pages={pages} damping={0.1}>
-            <BackgroundText />
-            <Model />
-            
-            <Scroll html style={{ width: '100%', height: '100%', zIndex: 10, pointerEvents: 'none' }}>
-              <ContentWrapper setPages={setPages}>
-                {/* ★navigate関数をPropsとして渡す */}
-                <FirstView navigate={navigate} />
-                <ContentsView />
-                <ProfileView />
-                <GalleryView />
-                <Footer />
-              </ContentWrapper>
-            </Scroll>
-          </ScrollControls>
+        <ScrollControls pages={pages} damping={0.1}>
+          <BackgroundText />
+          <Model />
           
-          <ambientLight intensity={0.5} />
-          <directionalLight position={[10, 10, 5]} intensity={1} color="#ffffff" />
-          <Environment files={import.meta.env.BASE_URL + "blender-env.jpeg"} background={false} />
-        </Suspense>
+          {/* pointerEvents: 'none' でHTMLレイヤーを貫通させ、下のモデルに触れるようにする */}
+          <Scroll html style={{ width: '100%', height: '100%', zIndex: 10, pointerEvents: 'none' }}>
+            <ContentWrapper setPages={setPages}>
+              {/* ★navigateを各コンポーネントに渡す */}
+              <FirstView navigate={navigate} />
+              <ContentsView navigate={navigate} />
+              <ProfileView />
+              <GalleryView />
+              <Footer />
+            </ContentWrapper>
+          </Scroll>
+        </ScrollControls>
+        
+        <ambientLight intensity={0.5} />
+        <directionalLight position={[10, 10, 5]} intensity={1} color="#ffffff" />
+        <Environment files={import.meta.env.BASE_URL + "blender-env.jpeg"} background={false} />
       </Canvas>
     </div>
   );

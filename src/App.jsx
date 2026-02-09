@@ -1,21 +1,31 @@
-import React from 'react';
-import { HashRouter, Routes, Route } from 'react-router-dom';
-// ↓ 先頭を大文字にするのがルールです！
-import Home from './pages/Home';
-import Contents from './pages/Contents';
-import Profile from './pages/Profile';
-import Gallery from './pages/Gallery';
-import './App.css';
+// src/App.jsx
+import React from "react";
+import { Routes, Route, useLocation } from "react-router-dom";
+import { AnimatePresence } from "framer-motion";
 
-export default function App() {
+import Home from "./pages/Home";
+import Contents from "./pages/Contents";
+import Profile from "./pages/Profile";
+import Gallery from "./pages/Gallery";
+import "./App.css";
+
+function App() {
+  const location = useLocation();
+
   return (
-    <HashRouter>
-      <Routes>
+    <AnimatePresence mode="wait">
+      <Routes location={location} key={location.pathname}>
+        {/* ★修正: シンプルに「/」だけでOK！(自動で /portfolio/ になります) */}
         <Route path="/" element={<Home />} />
+        
+        {/* ★修正: ここも「/contents」だけでOK！(自動で /portfolio/contents になります) */}
         <Route path="/contents" element={<Contents />} />
+        
         <Route path="/profile" element={<Profile />} />
         <Route path="/gallery" element={<Gallery />} />
       </Routes>
-    </HashRouter>
+    </AnimatePresence>
   );
 }
+
+export default App;

@@ -732,3 +732,185 @@ canvas {
   pointer-events: auto !important;
   touch-action: pan-y; /* 縦スクロールは許可しつつ、横スワイプをJSに渡す設定 */
 }
+
+/* ... (これまでのCSSの下に追加) ... */
+
+
+/* =========================================
+   Sub Pages Common (下層ページ共通)
+   ========================================= */
+.page-wrapper {
+  width: 100%;
+  min-height: 100vh;
+  background-color: #fff; /* 白背景 */
+  color: #000;
+  position: relative;
+  z-index: 100;
+  padding: 40px 5vw;
+  /* アニメーション：ふわっと表示 */
+  animation: fadeIn 0.8s ease forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ヘッダー */
+.sub-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 80px;
+  position: relative;
+  z-index: 10;
+}
+
+.header-logo {
+  font-size: 1.5rem;
+  font-weight: 700;
+  font-family: "Helvetica Neue", sans-serif;
+  letter-spacing: -0.02em;
+}
+
+.back-link {
+  font-size: 1rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: opacity 0.3s;
+}
+.back-link:hover { opacity: 0.6; }
+.back-link .arrow { font-size: 1.2rem; }
+
+/* ページタイトル */
+.page-title {
+  font-size: clamp(3rem, 10vw, 6rem); /* レスポンシブな巨大文字 */
+  font-family: "Helvetica Neue", sans-serif;
+  margin-bottom: 60px;
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+
+.container-inner {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+
+/* =========================================
+   Contents Page Grid Design
+   ========================================= */
+.contents-grid {
+  display: grid;
+  /* PC: 2列, スマホ: 1列 */
+  grid-template-columns: repeat(2, 1fr); 
+  gap: 80px 40px; /* 上下80px, 左右40px */
+}
+
+/* グリッドアイテム */
+.grid-item {
+  display: block;
+  text-decoration: none;
+  color: #000;
+}
+
+/* 画像エリア */
+.img-box {
+  width: 100%;
+  aspect-ratio: 16 / 9; /* 横長比率 */
+  background-color: #eee;
+  overflow: hidden;
+  margin-bottom: 20px;
+  position: relative;
+}
+
+.img-box img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1); /* 滑らかなズーム */
+}
+
+/* ホバー時の画像ズーム */
+.grid-item:hover .img-box img {
+  transform: scale(1.05);
+}
+
+/* ホバー時のオーバーレイ（黒い幕） */
+.img-overlay {
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0,0,0,0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.img-overlay span {
+  color: #fff;
+  border: 1px solid #fff;
+  padding: 10px 20px;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+}
+.grid-item:hover .img-overlay {
+  opacity: 1;
+}
+
+/* テキストエリア */
+.text-box {
+  padding-top: 10px;
+  border-top: 1px solid #000;
+}
+
+.meta-info {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  font-weight: 700;
+  margin-bottom: 10px;
+  opacity: 0.6;
+  font-family: sans-serif;
+}
+
+.item-title {
+  font-size: 1.8rem;
+  font-weight: 400;
+  line-height: 1.2;
+  margin: 0;
+}
+
+/* フッター */
+.sub-footer {
+  margin-top: 100px;
+  text-align: center;
+  border-top: 1px solid #eee;
+  padding-top: 40px;
+}
+
+
+/* =========================================
+   スマホ対応 (768px以下)
+   ========================================= */
+@media (max-width: 768px) {
+  .sub-header {
+    margin-bottom: 40px;
+  }
+  
+  .contents-grid {
+    grid-template-columns: 1fr; /* 1列にする */
+    gap: 50px;
+  }
+
+  .item-title {
+    font-size: 1.4rem;
+  }
+  
+  .page-wrapper {
+    padding: 30px 5vw;
+  }
+}
+
