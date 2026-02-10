@@ -190,18 +190,38 @@ const FirstView = ({ navigate }) => (
       </div>
       <div className="right-section">
         <ul className="nav-list">
-          {/* ★修正: 各ページへの遷移を設定 */}
           <li className="nav-item">
             <span className="nav-number">01</span>
-            <div className="nav-text" onClick={() => navigate('/contents')} style={{ cursor: 'pointer' }}>contents</div>
+            {/* ★修正: styleに pointerEvents: 'auto' と position/zIndex を追加して強制的にクリック可能にする */}
+            <div 
+              className="nav-text" 
+              onClick={() => navigate('/contents')} 
+              style={{ cursor: 'pointer', pointerEvents: 'auto', position: 'relative', zIndex: 1000 }}
+            >
+              contents
+            </div>
           </li>
           <li className="nav-item">
             <span className="nav-number">02</span>
-            <div className="nav-text" onClick={() => navigate('/profile')} style={{ cursor: 'pointer' }}>profile</div>
+            {/* ★修正 */}
+            <div 
+              className="nav-text" 
+              onClick={() => navigate('/profile')} 
+              style={{ cursor: 'pointer', pointerEvents: 'auto', position: 'relative', zIndex: 1000 }}
+            >
+              profile
+            </div>
           </li>
           <li className="nav-item">
             <span className="nav-number">03</span>
-            <div className="nav-text" onClick={() => navigate('/gallery')} style={{ cursor: 'pointer' }}>gallery</div>
+            {/* ★修正 */}
+            <div 
+              className="nav-text" 
+              onClick={() => navigate('/gallery')} 
+              style={{ cursor: 'pointer', pointerEvents: 'auto', position: 'relative', zIndex: 1000 }}
+            >
+              gallery
+            </div>
           </li>
         </ul>
       </div>
