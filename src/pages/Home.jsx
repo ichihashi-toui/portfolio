@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef, useState, useEffect, Suspense } from "react"; // ★Suspenseを追加
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { 
   useGLTF, 
@@ -11,7 +11,7 @@ import {
   PresentationControls
 } from "@react-three/drei";
 import { motion } from "framer-motion"; 
-import { useNavigate } from "react-router-dom"; // ★追加: ページ遷移用
+import { useNavigate } from "react-router-dom";
 import "../App.css";
 
 // --- 3Dモデルコンポーネント ---
@@ -168,7 +168,6 @@ const BackgroundText = () => {
 };
 
 // --- 各セクション ---
-// ★修正: navigateを受け取る
 const FirstView = ({ navigate }) => (
   <div className="section-first">
     <div className="layer-front">
@@ -192,7 +191,6 @@ const FirstView = ({ navigate }) => (
         <ul className="nav-list">
           <li className="nav-item">
             <span className="nav-number">01</span>
-            {/* ★修正: styleに pointerEvents: 'auto' と position/zIndex を追加して強制的にクリック可能にする */}
             <div 
               className="nav-text" 
               onClick={() => navigate('/contents')} 
@@ -203,7 +201,6 @@ const FirstView = ({ navigate }) => (
           </li>
           <li className="nav-item">
             <span className="nav-number">02</span>
-            {/* ★修正 */}
             <div 
               className="nav-text" 
               onClick={() => navigate('/profile')} 
@@ -214,7 +211,6 @@ const FirstView = ({ navigate }) => (
           </li>
           <li className="nav-item">
             <span className="nav-number">03</span>
-            {/* ★修正 */}
             <div 
               className="nav-text" 
               onClick={() => navigate('/gallery')} 
@@ -229,9 +225,7 @@ const FirstView = ({ navigate }) => (
   </div>
 );
 
-// ★修正: navigateを受け取り、リストをクリック可能にする
 const ContentsView = ({ navigate }) => {
-  // ★slugを追加して遷移先を指定
   const projects = [
     { id: "01", cat: "Web design", title: "FOMO啓発サイト", stack: "Figma / HTML / CSS / JavaScript", date: "2026-01", slug: "fomo" },
     { id: "02", cat: "Web design", title: "ブランドサイト リデザイン", stack: "Figma / Blender / HTML / CSS / JavaScript", date: "2025-11", slug: "redesign" },
@@ -252,8 +246,7 @@ const ContentsView = ({ navigate }) => {
             <li 
               key={index} 
               className="project-item" 
-              // ★クリックで詳細ページへ遷移
-              onClick={() => navigate(`/project/${item.slug}`)}
+              onClick={() => navigate(`/contents`)} // ★コンテンツ一覧へ
               style={{ cursor: 'pointer' }}
             >
               <div className="item-header">
@@ -358,43 +351,46 @@ const ContentWrapper = ({ setPages, children }) => {
 // --- Main App ---
 export default function Home() {
   const [pages, setPages] = useState(7); 
-  // ★追加: ページ遷移用のフック
   const navigate = useNavigate();
 
   return (
     <div className="container">
-      <div className="hamburger-menu">
-        <div className="bar"></div>
-        <div className="bar"></div>
-        <div className="bar"></div>
-      </div>
+      {/* ★ハンバーガーメニューはApp.jsxで管理するようにしたので、
+        Home.jsxからは削除しても良いですが、
+        デザイン上残しておく場合はクリックイベントなしの飾りとして残すか、
+        App.jsxのものを優先してください。
+        （ここではコードの整合性を保つため、App.jsxにあるならここは削除推奨ですが、
+          ユーザーのコードを尊重して一旦残すなら、App.jsxと重ならないように注意が必要です）
+      */}
+      {/* <div className="hamburger-menu"> ... </div> */}
 
       <Canvas 
         dpr={[1, 1.5]} 
         camera={{ position: [0, 0, 12], fov: 50 }}
-        /* ★重要：touchAction: 'pan-y' に設定！ */
         style={{ touchAction: 'pan-y' }} 
       >
-        <ScrollControls pages={pages} damping={0.1}>
-          <BackgroundText />
-          <Model />
+        {/* ★修正: Canvasの中身全体をSuspenseで囲む */}
+        {/* fallback={null}で読み込み中は何も表示しない（必要ならローディングを表示可能） */}
+        <Suspense fallback={null}>
+          <ScrollControls pages={pages} damping={0.1}>
+            <BackgroundText />
+            <Model />
+            
+            <Scroll html style={{ width: '100%', height: '100%', zIndex: 10, pointerEvents: 'none' }}>
+              <ContentWrapper setPages={setPages}>
+                <FirstView navigate={navigate} />
+                <ContentsView navigate={navigate} />
+                <ProfileView />
+                <GalleryView />
+                <Footer />
+              </ContentWrapper>
+            </Scroll>
+          </ScrollControls>
           
-          {/* pointerEvents: 'none' でHTMLレイヤーを貫通させ、下のモデルに触れるようにする */}
-          <Scroll html style={{ width: '100%', height: '100%', zIndex: 10, pointerEvents: 'none' }}>
-            <ContentWrapper setPages={setPages}>
-              {/* ★navigateを各コンポーネントに渡す */}
-              <FirstView navigate={navigate} />
-              <ContentsView navigate={navigate} />
-              <ProfileView />
-              <GalleryView />
-              <Footer />
-            </ContentWrapper>
-          </Scroll>
-        </ScrollControls>
-        
-        <ambientLight intensity={0.5} />
-        <directionalLight position={[10, 10, 5]} intensity={1} color="#ffffff" />
-        <Environment files={import.meta.env.BASE_URL + "blender-env.jpeg"} background={false} />
+          <ambientLight intensity={0.5} />
+          <directionalLight position={[10, 10, 5]} intensity={1} color="#ffffff" />
+          <Environment files={import.meta.env.BASE_URL + "blender-env.jpeg"} background={false} />
+        </Suspense>
       </Canvas>
     </div>
   );
