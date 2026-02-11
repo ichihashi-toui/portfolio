@@ -1,10 +1,9 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Link } from 'react-router-dom'; // ★追加
+import { Link } from 'react-router-dom';
 import '../App.css'; 
 
 const Profile = () => {
-  // プロフィールデータ
   const profileData = {
     nameEn: "ICHIHASHI TOUI",
     nameJa: "市橋 冬翔",
@@ -32,7 +31,6 @@ Webデザインにおける実装力（React, Three.js）と、グラフィッ�
     ]
   };
 
-  // --- スタイル定義 ---
   const containerStyle = {
     width: '100%',
     minHeight: '100vh',
@@ -78,38 +76,52 @@ Webデザインにおける実装力（React, Three.js）と、グラフィッ�
       exit={{ opacity: 0, y: -30 }}
       transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
     >
-      {/* ★追加: EXITボタン (Contents.jsxと共通) */}
+      {/* ★修正: EXIT位置調整 */}
       <Link to="/" style={{ 
         position: 'fixed', 
         top: '40px', 
-        left: '5vw', 
+        left: '4vw', 
         color: '#000', 
         fontWeight: 'bold', 
         fontSize: '1rem', 
         textDecoration: 'none', 
         zIndex: 1000,
         textTransform: 'uppercase', 
-        letterSpacing: '0.05em'
+        letterSpacing: '0.05em',
+        padding: '0 20px',
+        height: '20px',
+        display: 'flex',
+        alignItems: 'center',
+        transform: 'translateY(-2px)' // ★微調整
       }}>
         exit
       </Link>
 
-      {/* 1. HERO AREA */}
-      <div style={{ marginBottom: '140px' }}>
-        <p style={{ fontWeight: 'bold', marginBottom: '20px', fontSize: '1.2rem' }}>{profileData.role}</p>
-        <h1 style={{ 
-          fontSize: 'clamp(3.5rem, 9vw, 8rem)', 
-          lineHeight: 0.9, 
-          fontWeight: '900', 
-          letterSpacing: '-0.04em',
-          marginLeft: '-0.05em', 
-          textTransform: 'uppercase'
-        }}>
-          {profileData.nameEn.split(' ').map((word, i) => (
-            <span key={i} style={{ display: 'block' }}>{word}</span>
-          ))}
-        </h1>
-        <p style={{ marginTop: '20px', fontSize: '1.2rem', fontWeight: '500' }}>{profileData.nameJa}</p>
+      <div style={{ marginBottom: '140px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap-reverse', gap: '40px' }}>
+        <div>
+          <p style={{ fontWeight: 'bold', marginBottom: '20px', fontSize: '1.2rem' }}>{profileData.role}</p>
+          <h1 style={{ 
+            fontSize: 'clamp(3.5rem, 9vw, 8rem)', 
+            lineHeight: 0.9, 
+            fontWeight: '900', 
+            letterSpacing: '-0.04em',
+            marginLeft: '-0.05em', 
+            textTransform: 'uppercase'
+          }}>
+            {profileData.nameEn.split(' ').map((word, i) => (
+              <span key={i} style={{ display: 'block' }}>{word}</span>
+            ))}
+          </h1>
+          <p style={{ marginTop: '20px', fontSize: '1.2rem', fontWeight: '500' }}>{profileData.nameJa}</p>
+        </div>
+        <motion.div
+          initial={{ opacity: 0, scale: 0.8, rotate: -10 }}
+          animate={{ opacity: 1, scale: 1, rotate: 0 }}
+          transition={{ duration: 0.8, delay: 0.3, ease: "backOut" }}
+          style={{ width: 'clamp(150px, 30vw, 300px)', flexShrink: 0 }}
+        >
+          <img src={import.meta.env.BASE_URL + "star.png"} alt="Profile Icon" style={{ width: '100%', height: 'auto', filter: 'drop-shadow(0 10px 20px rgba(0,0,0,0.15))' }} />
+        </motion.div>
       </div>
 
       {/* 2. BASIC INFO */}

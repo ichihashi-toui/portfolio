@@ -1,7 +1,7 @@
 import React, { useRef, useState, useMemo, Suspense, useEffect } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { useGLTF, useTexture, Environment, Text } from "@react-three/drei";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import * as THREE from 'three';
 import "../App.css";
 
@@ -27,7 +27,15 @@ const projects = [
       { title: "3Dメタファー", desc: "情報の洪水を表現するノイズのかかったパーティクルと、クリアな思考を表す幾何学立体を対比させました。" }
     ]
   },
-  { id: "02", slug: "redesign", cat: "Web Design", date: "2025.11", title: "ブランドサイト", themeColor: "#1d3557" },
+  { 
+    id: "02", 
+    slug: "redesign",
+    cat: "Web Design", 
+    date: "2025.11", 
+    title: "ブランドサイト", 
+    themeColor: "#1d3557",
+    desc: "既存ブランドのリブランディングプロジェクト。",
+  },
   { id: "03", cat: "Web Design", title: "メンズ美容", date: "2026.12", slug: "mens-cosme", themeColor: "#333333" },
   { id: "04", cat: "Web Design", title: "コーポレート", date: "2025.10", slug: "corporate", themeColor: "#2a9d8f" },
   { id: "05", cat: "Graphic", title: "展示会リーフレット", date: "2025.06", slug: "leaflet", themeColor: "#e9c46a" },
@@ -36,64 +44,19 @@ const projects = [
   { id: "08", cat: "Graphic", title: "ポスター制作", date: "2025.11", slug: "poster", themeColor: "#457b9d" },
 ];
 
-// ==============================================
-//  スタイル定義
-// ==============================================
-const sectionTitleStyle = {
-  fontSize: '1rem',
-  fontWeight: '700',
-  marginBottom: '20px',
-  borderBottom: '2px solid #000',
-  paddingBottom: '10px',
-  display: 'inline-block',
-  width: '100%',
-};
-
-const navButtonStyle = {
-  background: 'none', border: 'none', fontSize: '1.5rem', fontWeight: 'bold',
-  cursor: 'pointer', padding: '10px 20px', color: '#000', transition: 'opacity 0.3s',
-};
-
-const controlButtonStyle = {
-  background: 'none',
-  border: 'none',
-  fontSize: '1.2rem',
-  fontWeight: 'bold',
-  cursor: 'pointer',
-  color: '#000',
-  padding: '10px',
-  fontFamily: '"Helvetica Neue", Arial, sans-serif',
-  textTransform: 'uppercase',
-  letterSpacing: '0.05em',
-};
+const sectionTitleStyle = { fontSize: '1rem', fontWeight: '700', marginBottom: '20px', borderBottom: '2px solid #000', paddingBottom: '10px', display: 'inline-block', width: '100%' };
+const navButtonStyle = { background: 'none', border: 'none', fontSize: '1.5rem', fontWeight: 'bold', cursor: 'pointer', padding: '20px', color: '#000', transition: 'opacity 0.3s' };
+const controlButtonStyle = { background: 'none', border: 'none', fontSize: '1.2rem', fontWeight: 'bold', cursor: 'pointer', color: '#000', padding: '20px', fontFamily: '"Helvetica Neue", Arial, sans-serif', textTransform: 'uppercase', letterSpacing: '0.05em' };
 
 // ==============================================
-//  コンポーネント：カセットヘッダー
+//  コンポーネント群
 // ==============================================
 const CassetteHeader = ({ project }) => {
-  const screwStyle = {
-    width: '12px', height: '12px', borderRadius: '50%',
-    background: 'linear-gradient(135deg, #555, #222)',
-    boxShadow: 'inset 1px 1px 2px rgba(0,0,0,0.8), 0 1px 0 rgba(255,255,255,0.2)',
-    position: 'absolute', top: '50%', transform: 'translateY(-50%)'
-  };
-
+  const screwStyle = { width: '12px', height: '12px', borderRadius: '50%', background: 'linear-gradient(135deg, #555, #222)', boxShadow: 'inset 1px 1px 2px rgba(0,0,0,0.8), 0 1px 0 rgba(255,255,255,0.2)', position: 'absolute', top: '50%', transform: 'translateY(-50%)' };
   return (
-    <div style={{
-      width: '100%',
-      height: '60px',
-      background: '#1a1a1a',
-      borderRadius: '8px 8px 0 0',
-      position: 'relative',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      boxShadow: 'inset 0 1px 3px rgba(255,255,255,0.1)'
-    }}>
+    <div style={{ width: '100%', height: '60px', background: '#1a1a1a', borderRadius: '8px 8px 0 0', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: 'inset 0 1px 3px rgba(255,255,255,0.1)' }}>
       <div style={{ ...screwStyle, left: '20px' }} />
-      <div style={{
-        width: '60%', height: '40px', background: '#fff', borderRadius: '4px', overflow: 'hidden', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: 'inset 0 2px 5px rgba(0,0,0,0.5)'
-      }}>
+      <div style={{ width: '60%', height: '40px', background: '#fff', borderRadius: '4px', overflow: 'hidden', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: 'inset 0 2px 5px rgba(0,0,0,0.5)' }}>
         <img src={`${import.meta.env.BASE_URL}labels/${project.slug}.png`} alt="" style={{ width: '100%', height: '300%', objectFit: 'cover', opacity: 0.9 }} />
         <div style={{ position: 'absolute', top:0, left:0, width:'100%', height:'100%', boxShadow: 'inset 0 0 10px rgba(0,0,0,0.3)' }} />
       </div>
@@ -102,26 +65,17 @@ const CassetteHeader = ({ project }) => {
   );
 };
 
-// ==============================================
-//  3D機能
-// ==============================================
 const CameraRig = ({ isDetailMode, isMobile }) => {
   useFrame((state, delta) => {
     let targetZ, targetY;
-
     if (isDetailMode) {
       targetZ = 9.0;
       targetY = -0.5;
     } else {
-      // PC(isMobile=false)の時は 10.5 (元のサイズ)
-      // スマホ(isMobile=true)の時は 9.5 (大きく、寄る)
       targetZ = isMobile ? 9.5 : 10.5;
       targetY = isMobile ? -1.5 : 0;
     }
-
-    const damp = (current, target, speed) => 
-      THREE.MathUtils.lerp(current, target, 1 - Math.exp(-speed * delta));
-
+    const damp = (current, target, speed) => THREE.MathUtils.lerp(current, target, 1 - Math.exp(-speed * delta));
     state.camera.position.z = damp(state.camera.position.z, targetZ, 2.0);
     state.camera.position.y = damp(state.camera.position.y, targetY, 2.0);
     state.camera.lookAt(0, 0, 0);
@@ -145,15 +99,7 @@ const CassetteModel = ({ slug, isActive, isSelected, isOtherSelected }) => {
   const { scene } = useGLTF(import.meta.env.BASE_URL + "cassette.glb");
   const clone = useMemo(() => scene.clone(), [scene]);
   const texture = useTexture(`${import.meta.env.BASE_URL}labels/${slug}.png`);
-  
-  texture.flipY = false;
-  texture.colorSpace = THREE.SRGBColorSpace;
-  texture.wrapS = THREE.RepeatWrapping;
-  texture.wrapT = THREE.RepeatWrapping;
-  const scaleY = 1.1; 
-  texture.repeat.set(1, scaleY);
-  texture.offset.set(0, (1 - scaleY) / 2);
-
+  texture.flipY = false; texture.colorSpace = THREE.SRGBColorSpace; texture.wrapS = THREE.RepeatWrapping; texture.wrapT = THREE.RepeatWrapping; const scaleY = 1.1; texture.repeat.set(1, scaleY); texture.offset.set(0, (1 - scaleY) / 2);
   useFrame((state, delta) => {
     clone.traverse((child) => {
       if (child.isMesh) {
@@ -163,32 +109,19 @@ const CassetteModel = ({ slug, isActive, isSelected, isOtherSelected }) => {
           child.userData.originalColor = child.material.color.clone();
         }
         child.material.transparent = true;
-
         let targetOpacity = 1.0;
         let targetColorScale = 1.0;
-
-        if (isSelected) {
-          targetOpacity = 1.0;
-          targetColorScale = 1.0;
-        } else if (isOtherSelected) {
-          targetOpacity = 0.0;
-        } else if (!isActive) {
-          targetOpacity = 0.2;
-          targetColorScale = 0.3;
-        }
-
+        if (isSelected) { targetOpacity = 1.0; targetColorScale = 1.0; } 
+        else if (isOtherSelected) { targetOpacity = 0.0; } 
+        else if (!isActive) { targetOpacity = 0.2; targetColorScale = 0.3; }
         const targetColor = child.userData.originalColor.clone().multiplyScalar(targetColorScale);
         const damp = 1 - Math.exp(-4.0 * delta);
         child.material.opacity = THREE.MathUtils.lerp(child.material.opacity, targetOpacity, damp);
         child.material.color.lerp(targetColor, damp);
-        
-        if (child.material.name === 'CassetteLabel') {
-          child.material.map = texture;
-        }
+        if (child.material.name === 'CassetteLabel') { child.material.map = texture; }
       }
     });
   });
-
   return <primitive object={clone} />;
 };
 
@@ -196,15 +129,11 @@ const Cassette = ({ project, isActive, selectedSlug, onSelect }) => {
   const groupRef = useRef();
   const isSelected = selectedSlug === project.slug;
   const isOtherSelected = selectedSlug !== null && !isSelected;
-
   useFrame((state, delta) => {
     if (!groupRef.current) return;
-    const damp = (current, target, speed) => 
-      THREE.MathUtils.lerp(current, target, 1 - Math.exp(-speed * delta));
-
+    const damp = (current, target, speed) => THREE.MathUtils.lerp(current, target, 1 - Math.exp(-speed * delta));
     if (isSelected) {
-      const targetPos = new THREE.Vector3(0, -2.2, 8.5);
-      const targetRot = new THREE.Euler(-Math.PI / 2, 0, 0);
+      const targetPos = new THREE.Vector3(0, -2.2, 8.5); const targetRot = new THREE.Euler(-Math.PI / 2, 0, 0);
       groupRef.current.position.x = damp(groupRef.current.position.x, targetPos.x, 3.0);
       groupRef.current.position.y = damp(groupRef.current.position.y, targetPos.y, 3.0);
       groupRef.current.position.z = damp(groupRef.current.position.z, targetPos.z, 3.0);
@@ -218,7 +147,6 @@ const Cassette = ({ project, isActive, selectedSlug, onSelect }) => {
       const t = state.clock.getElapsedTime();
       groupRef.current.rotation.z = Math.sin(t * 0.5) * 0.02;
       groupRef.current.position.y = THREE.MathUtils.lerp(groupRef.current.position.y, 0.3 + Math.sin(t * 0.8) * 0.03, 0.1);
-
       if (isActive && !isOtherSelected) {
         const { x, y } = state.pointer;
         groupRef.current.rotation.x = damp(groupRef.current.rotation.x, -y * 0.5, 4.0);
@@ -229,17 +157,8 @@ const Cassette = ({ project, isActive, selectedSlug, onSelect }) => {
       }
     }
   });
-
   return (
-    <group 
-      ref={groupRef}
-      onClick={(e) => {
-        if (isActive && !selectedSlug) {
-          e.stopPropagation();
-          onSelect(project.slug);
-        }
-      }}
-    >
+    <group ref={groupRef} onClick={(e) => { if (isActive && !selectedSlug) { e.stopPropagation(); onSelect(project.slug); } }}>
       <CassetteModel slug={project.slug} isActive={isActive} isSelected={isSelected} isOtherSelected={isOtherSelected} />
       {!selectedSlug && isActive && (
         <group position={[0, -0.75, 0]}>
@@ -254,17 +173,8 @@ const Cassette = ({ project, isActive, selectedSlug, onSelect }) => {
 
 const Carousel = ({ targetIndex, selectedSlug, onSelect, isMobile }) => {
   const groupRef = useRef();
-  // スマホなら半径3.5まで小さくして密集させる
-  const radius = isMobile ? 3.5 : 7.0; 
-  const angleStep = (Math.PI * 2) / projects.length;
-
-  useFrame((state, delta) => {
-    if (!groupRef.current) return;
-    const targetRotationY = -targetIndex * angleStep;
-    const damp = 1 - Math.exp(-3.0 * delta);
-    groupRef.current.rotation.y = THREE.MathUtils.lerp(groupRef.current.rotation.y, targetRotationY, damp);
-  });
-
+  const radius = isMobile ? 3.5 : 7.0; const angleStep = (Math.PI * 2) / projects.length;
+  useFrame((state, delta) => { if (!groupRef.current) return; const targetRotationY = -targetIndex * angleStep; const damp = 1 - Math.exp(-3.0 * delta); groupRef.current.rotation.y = THREE.MathUtils.lerp(groupRef.current.rotation.y, targetRotationY, damp); });
   return (
     <group ref={groupRef}>
       {projects.map((project, i) => {
@@ -283,19 +193,22 @@ const Carousel = ({ targetIndex, selectedSlug, onSelect, isMobile }) => {
 //  メインコンポーネント
 // ==============================================
 export default function Contents() {
+  const location = useLocation(); 
+  const [selectedSlug, setSelectedSlug] = useState(location.state?.targetSlug || null);
   const [targetIndex, setTargetIndex] = useState(0);
-  const [selectedSlug, setSelectedSlug] = useState(null);
   const [isMobile, setIsMobile] = useState(false);
-  const len = projects.length;
-  const currentIndex = ((targetIndex % len) + len) % len;
   const selectedProject = projects.find(p => p.slug === selectedSlug);
+  const currentIndex = selectedProject ? projects.findIndex(p => p.slug === selectedSlug) : ((targetIndex % projects.length) + projects.length) % projects.length;
   
   const upScrollBuffer = useRef(0);
   const [isLocked, setIsLocked] = useState(false);
-  
-  const touchStartY = useRef(null);
+  const touchStart = useRef({ x: 0, y: 0 });
 
   useEffect(() => {
+    if (location.state?.targetSlug) {
+      const idx = projects.findIndex(p => p.slug === location.state.targetSlug);
+      if (idx !== -1) setTargetIndex(idx);
+    }
     const checkMobile = () => setIsMobile(window.innerWidth <= 768);
     checkMobile();
     window.addEventListener('resize', checkMobile);
@@ -308,14 +221,8 @@ export default function Contents() {
       upScrollBuffer.current = 0;
       document.body.style.overflow = "hidden";
       setIsLocked(true);
-      const timer = setTimeout(() => {
-        document.body.style.overflow = "";
-        setIsLocked(false);
-      }, 800);
-      return () => {
-        clearTimeout(timer);
-        document.body.style.overflow = "";
-      };
+      const timer = setTimeout(() => { document.body.style.overflow = ""; setIsLocked(false); }, 800);
+      return () => { clearTimeout(timer); document.body.style.overflow = ""; };
     }
   }, [selectedSlug]);
 
@@ -323,69 +230,47 @@ export default function Contents() {
     if (selectedSlug) {
       if (isLocked) return;
       if (window.scrollY <= 10) {
-        if (e.deltaY < 0) {
-           upScrollBuffer.current += e.deltaY;
-        } else {
-           upScrollBuffer.current = 0;
-        }
-        if (upScrollBuffer.current < -300) {
-          setSelectedSlug(null);
-          upScrollBuffer.current = 0;
-        }
-      } else {
-        upScrollBuffer.current = 0;
-      }
+        if (e.deltaY < 0) { upScrollBuffer.current += e.deltaY; } else { upScrollBuffer.current = 0; }
+        if (upScrollBuffer.current < -300) { setSelectedSlug(null); upScrollBuffer.current = 0; }
+      } else { upScrollBuffer.current = 0; }
     } else {
-      if (e.deltaY > 30) {
-        setSelectedSlug(projects[currentIndex].slug);
-      } else if (e.deltaY < -30) {
-         setTargetIndex(prev => prev - 1);
-      } else if (e.deltaY > 30) {
-         setTargetIndex(prev => prev + 1);
-      }
+      if (e.deltaY > 30) { setSelectedSlug(projects[currentIndex].slug); } 
+      else if (e.deltaY < -30) { setTargetIndex(prev => prev - 1); } 
+      else if (e.deltaY > 30) { setTargetIndex(prev => prev + 1); }
     }
   };
 
-  const handleTouchStart = (e) => {
-    touchStartY.current = e.touches[0].clientY;
-  };
-
+  const handleTouchStart = (e) => { touchStart.current = { x: e.touches[0].clientX, y: e.touches[0].clientY }; };
   const handleTouchMove = (e) => {
-    if (!touchStartY.current) return;
-    const touchEndY = e.touches[0].clientY;
-    const diffY = touchStartY.current - touchEndY;
+    if (!touchStart.current.x && !touchStart.current.y) return;
+    const touchEnd = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+    const diffX = touchStart.current.x - touchEnd.x;
+    const diffY = touchStart.current.y - touchEnd.y;
 
     if (!selectedSlug) {
-      if (diffY > 50) { 
-        setTargetIndex(prev => prev + 1);
-        touchStartY.current = null; 
-      } else if (diffY < -50) { 
-        setTargetIndex(prev => prev - 1);
-        touchStartY.current = null;
+      if (Math.abs(diffX) > Math.abs(diffY)) {
+        if (diffX > 50) { setTargetIndex(prev => prev + 1); touchStart.current = { x: 0, y: 0 }; } 
+        else if (diffX < -50) { setTargetIndex(prev => prev - 1); touchStart.current = { x: 0, y: 0 }; }
+      } else {
+        if (diffY > 80) { 
+           const currentSlug = projects[currentIndex].slug;
+           setSelectedSlug(currentSlug);
+           touchStart.current = { x: 0, y: 0 };
+        }
       }
+    } else {
+      if (window.scrollY <= 0 && diffY < -80) { setSelectedSlug(null); touchStart.current = { x: 0, y: 0 }; }
     }
   };
 
   return (
-    <div 
-      style={{ position: 'relative', width: '100vw', background: '#e0e0e0', touchAction: 'pan-y' }} 
-      onWheel={handleWheel}
-      onTouchStart={handleTouchStart}
-      onTouchMove={handleTouchMove}
-    >
-      {/* 共通ヘッダー (EXITのみ) */}
+    <div style={{ position: 'relative', width: '100vw', background: '#e0e0e0', touchAction: selectedSlug ? 'auto' : 'none' }} onWheel={handleWheel} onTouchStart={handleTouchStart} onTouchMove={handleTouchMove}>
       {!selectedSlug && (
         <Link to="/" style={{ 
-          position: 'fixed', 
-          top: '40px', 
-          left: '5vw', 
-          color: '#000', 
-          fontWeight: 'bold', 
-          fontSize: '1rem', 
-          textDecoration: 'none', 
-          zIndex: 1000,
-          textTransform: 'uppercase', 
-          letterSpacing: '0.05em'
+          position: 'fixed', top: '40px', left: '4vw', color: '#000', 
+          fontWeight: 'bold', fontSize: '1rem', textDecoration: 'none', 
+          zIndex: 1000, textTransform: 'uppercase', letterSpacing: '0.05em', 
+          padding: '0 20px', height: '20px', display: 'flex', alignItems: 'center', transform: 'translateY(-2px)'
         }}>
           exit
         </Link>
@@ -405,154 +290,64 @@ export default function Contents() {
 
         {!selectedSlug && (
           <>
-            {/* PC UI */}
             {!isMobile && (
               <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none' }}>
-                <div style={{ position: 'absolute', top: '50%', left: '5vw', pointerEvents: 'auto' }}>
-                  <button onClick={() => setTargetIndex(prev => prev - 1)} style={navButtonStyle}>← PREV</button>
-                </div>
-                <div style={{ position: 'absolute', top: '50%', right: '5vw', pointerEvents: 'auto' }}>
-                  <button onClick={() => setTargetIndex(prev => prev + 1)} style={navButtonStyle}>NEXT →</button>
-                </div>
+                <div style={{ position: 'absolute', top: '50%', left: '5vw', pointerEvents: 'auto' }}><button onClick={() => setTargetIndex(prev => prev - 1)} style={navButtonStyle}>← PREV</button></div>
+                <div style={{ position: 'absolute', top: '50%', right: '5vw', pointerEvents: 'auto' }}><button onClick={() => setTargetIndex(prev => prev + 1)} style={navButtonStyle}>NEXT →</button></div>
               </div>
             )}
-
-            {/* Mobile UI */}
             {isMobile && (
-              <div style={{ 
-                position: 'absolute', 
-                bottom: '8%', 
-                left: 0, 
-                width: '100%', 
-                height: '80px',
-                pointerEvents: 'none',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                padding: '0 10vw'
-              }}>
-                <div style={{ pointerEvents: 'auto' }}>
-                  <button onClick={() => setTargetIndex(prev => prev - 1)} style={controlButtonStyle}>← prev</button>
-                </div>
-                <div style={{ pointerEvents: 'auto' }}>
-                  <button onClick={() => setTargetIndex(prev => prev + 1)} style={controlButtonStyle}>next →</button>
-                </div>
+              <div style={{ position: 'absolute', bottom: '8%', left: 0, width: '100%', height: '80px', pointerEvents: 'none', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 10vw' }}>
+                <div style={{ pointerEvents: 'auto' }}><button onClick={() => setTargetIndex(prev => prev - 1)} style={controlButtonStyle}>← prev</button></div>
+                <div style={{ pointerEvents: 'auto' }}><button onClick={() => setTargetIndex(prev => prev + 1)} style={controlButtonStyle}>next →</button></div>
               </div>
             )}
           </>
         )}
       </div>
 
-      {/* BACKボタン (固定中央配置) */}
+      {/* 詳細ページコンテナ (これがないと表示されません) */}
       {selectedSlug && (
-        <div style={{ 
-          position: 'fixed', 
-          top: '30px', 
-          left: 0,
-          width: '100%',
-          display: 'flex',
-          justifyContent: 'center',
-          zIndex: 1000, 
-          pointerEvents: 'none', 
-          animation: 'fadeIn 0.8s ease forwards'
-        }}>
-          <button 
-            onClick={() => {
-              setSelectedSlug(null);
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-            }}
-            style={{ 
-              background: '#000', 
-              color: '#fff', 
-              border: 'none', 
-              borderRadius: '30px', 
-              padding: '12px 30px', 
-              fontSize: '1rem', 
-              fontWeight: 'bold', 
-              cursor: 'pointer',
-              boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
-              fontFamily: '"Helvetica Neue", Arial, sans-serif',
-              pointerEvents: 'auto'
-            }}
-          >
-            back
-          </button>
-        </div>
-      )}
-
-      {selectedSlug && selectedProject && (
-        <div style={{ 
-          position: 'relative', 
-          zIndex: 10, 
-          marginTop: '-100vh',
-          animation: 'fadeIn 0.8s ease forwards',
-          fontFamily: '"Helvetica Neue", Arial, sans-serif'
-        }}>
-          <CassetteHeader project={selectedProject} />
-          
-          <div style={{
-            background: 'white',
-            minHeight: '100vh',
-            borderRadius: '0 0 0 0', 
-            padding: '80px 5vw',
-            boxShadow: '0 10px 30px rgba(0,0,0,0.1)',
-            color: '#000',
-          }}>
-            
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '80px', marginBottom: '120px', borderBottom: '2px solid #000', paddingBottom: '80px' }}>
-              <div style={{ flex: 1, minWidth: '300px' }}>
-                <p style={{ fontWeight: 'bold', marginBottom: '20px', fontSize: '1rem' }}>{selectedProject.cat} / {selectedProject.date}</p>
-                <h2 style={{ fontSize: "clamp(2rem, 4vw, 4rem)", lineHeight: 1.0, marginBottom: "60px", letterSpacing: '-0.03em', fontWeight: '800' }}>{selectedProject.title}</h2>
-                
-                <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr', gap: '20px', fontSize: '1rem', marginBottom: '40px' }}>
-                  <div style={{ fontWeight: 'bold', borderBottom: '1px solid #000', paddingBottom: '10px' }}>role</div>
-                  <div style={{ paddingBottom: '10px' }}>{selectedProject.role || '-'}</div>
-                  <div style={{ fontWeight: 'bold', borderBottom: '1px solid #000', paddingBottom: '10px' }}>tools</div>
-                  <div style={{ paddingBottom: '10px' }}>{selectedProject.tools || '-'}</div>
-                </div>
-              </div>
-              <div style={{ flex: 1.2, minWidth: '300px' }}>
-                <div style={{ width: '100%', aspectRatio: '16/9', background: '#f0f0f0', borderRadius: '0px', overflow: 'hidden' }}>
-                  <div style={{ width:'100%', height:'100%', display:'flex', alignItems:'center', justifyContent:'center', color:'#aaa', fontSize:'1.2rem'}}>Main Visual</div>
-                </div>
-              </div>
-            </div>
-
-            {selectedProject.background && (
-              <div style={{ marginBottom: '120px', maxWidth: '800px' }}>
-                <h3 style={sectionTitleStyle}>background & intent</h3>
-                <p style={{ fontSize: '1rem', lineHeight: 1.8, whiteSpace: 'pre-wrap', }}>{selectedProject.background}</p>
-              </div>
-            )}
-
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '80px', marginBottom: '120px' }}>
-              <div><h3 style={sectionTitleStyle}>target</h3><p style={{ lineHeight: 1.8, fontSize: '1rem' }}>{selectedProject.target || "準備中"}</p></div>
-              <div><h3 style={sectionTitleStyle}>persona</h3><p style={{ lineHeight: 1.8, fontSize: '1rem' }}>{selectedProject.persona || "準備中"}</p></div>
-            </div>
-
-            <div style={{ marginBottom: '140px', textAlign: 'left', borderLeft: '10px solid #000', paddingLeft: '40px' }}>
-              <h3 style={{ fontSize: '1rem', fontWeight: 'bold', marginBottom: '30px', color: '#000' }}>concept</h3>
-              <p style={{ fontSize: 'clamp(1.5rem, 4vw, 2.5rem)', fontWeight: '900', lineHeight: 1.3 }}>“ {selectedProject.concept || "Concept Text"} ”</p>
-            </div>
-
-            <div style={{ marginBottom: '100px' }}>
-              <h3 style={{...sectionTitleStyle, marginBottom: '60px'}}>design points</h3>
-              {selectedProject.points ? selectedProject.points.map((point, index) => (
-                <div key={index} style={{ display: 'flex', flexWrap: 'wrap', gap: '60px', marginBottom: '100px', alignItems: 'flex-start' }}>
-                  <div style={{ flex: 1, minWidth: '300px' }}>
-                     <div style={{ width: '100%', aspectRatio: '4/3', background: '#f5f5f5', borderRadius: '0px' }}></div>
-                  </div>
-                  <div style={{ flex: 1, minWidth: '300px', paddingTop: '10px' }}>
-                    <h4 style={{ fontSize: '1.4rem', marginBottom: '20px', fontWeight: 'bold', lineHeight: 1.2 }}>{String(index + 1).padStart(2, '0')}. {point.title}</h4>
-                    <p style={{ lineHeight: 1.8, fontSize: '1rem' }}>{point.desc}</p>
-                  </div>
-                </div>
-              )) : <p>ポイント情報は準備中です。</p>}
-            </div>
-
-            <div style={{ height: '100px' }} />
+        <>
+          <div style={{ position: 'fixed', top: '40px', left: 0, width: '100%', display: 'flex', justifyContent: 'center', zIndex: 1000, pointerEvents: 'none', animation: 'fadeIn 0.8s ease forwards' }}>
+            <button onClick={() => { setSelectedSlug(null); window.scrollTo({ top: 0, behavior: 'smooth' }); }} style={{ background: '#000', color: '#fff', border: 'none', borderRadius: '30px', padding: '12px 40px', fontSize: '1rem', fontWeight: 'bold', cursor: 'pointer', boxShadow: '0 4px 12px rgba(0,0,0,0.2)', fontFamily: '"Helvetica Neue", Arial, sans-serif', pointerEvents: 'auto' }}>back</button>
           </div>
-        </div>
+          
+          {selectedProject && (
+            <div style={{ position: 'relative', zIndex: 10, marginTop: '-100vh', animation: 'fadeIn 0.8s ease forwards', fontFamily: '"Helvetica Neue", Arial, sans-serif' }}>
+              <CassetteHeader project={selectedProject} />
+              <div style={{ background: 'white', minHeight: '100vh', borderRadius: '0 0 0 0', padding: '80px 5vw', boxShadow: '0 10px 30px rgba(0,0,0,0.1)', color: '#000' }}>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '80px', marginBottom: '120px', borderBottom: '2px solid #000', paddingBottom: '80px' }}>
+                  <div style={{ flex: 1, minWidth: '300px' }}>
+                    <p style={{ fontWeight: 'bold', marginBottom: '20px', fontSize: '1rem' }}>{selectedProject.cat} / {selectedProject.date}</p>
+                    <h2 style={{ fontSize: "clamp(3rem, 7vw, 6rem)", lineHeight: 1.0, marginBottom: "60px", letterSpacing: '-0.03em', fontWeight: '800' }}>{selectedProject.title}</h2>
+                    <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr', gap: '20px', fontSize: '1rem', marginBottom: '40px' }}>
+                      <div style={{ fontWeight: 'bold', borderBottom: '2px solid #000', paddingBottom: '10px' }}>role</div><div style={{ borderBottom: '1px solid #ddd', paddingBottom: '10px' }}>{selectedProject.role || '-'}</div>
+                      <div style={{ fontWeight: 'bold', borderBottom: '2px solid #000', paddingBottom: '10px' }}>tools</div><div style={{ borderBottom: '1px solid #ddd', paddingBottom: '10px' }}>{selectedProject.tools || '-'}</div>
+                    </div>
+                  </div>
+                  <div style={{ flex: 1.2, minWidth: '300px' }}><div style={{ width: '100%', aspectRatio: '16/9', background: '#f0f0f0', borderRadius: '0px', overflow: 'hidden' }}><div style={{ width:'100%', height:'100%', display:'flex', alignItems:'center', justifyContent:'center', color:'#aaa', fontSize:'1.2rem'}}>Main Visual</div></div></div>
+                </div>
+                {selectedProject.background && (<div style={{ marginBottom: '120px', maxWidth: '800px' }}><h3 style={sectionTitleStyle}>background & intent</h3><p style={{ fontSize: '1.2rem', lineHeight: 2.2, whiteSpace: 'pre-wrap', fontWeight: '500' }}>{selectedProject.background}</p></div>)}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '80px', marginBottom: '120px' }}>
+                  <div><h3 style={sectionTitleStyle}>target</h3><p style={{ lineHeight: 1.8, fontSize: '1.1rem' }}>{selectedProject.target || "準備中"}</p></div>
+                  <div><h3 style={sectionTitleStyle}>persona</h3><p style={{ lineHeight: 1.8, fontSize: '1.1rem' }}>{selectedProject.persona || "準備中"}</p></div>
+                </div>
+                <div style={{ marginBottom: '140px', textAlign: 'left', borderLeft: '10px solid #000', paddingLeft: '40px' }}><h3 style={{ fontSize: '1rem', fontWeight: 'bold', marginBottom: '30px', color: '#000' }}>concept</h3><p style={{ fontSize: 'clamp(2rem, 5vw, 3.5rem)', fontWeight: '900', lineHeight: 1.3 }}>“ {selectedProject.concept || "Concept Text"} ”</p></div>
+                <div style={{ marginBottom: '100px' }}>
+                  <h3 style={{...sectionTitleStyle, marginBottom: '60px'}}>design points</h3>
+                  {selectedProject.points ? selectedProject.points.map((point, index) => (
+                    <div key={index} style={{ display: 'flex', flexWrap: 'wrap', gap: '60px', marginBottom: '100px', alignItems: 'flex-start' }}>
+                      <div style={{ flex: 1, minWidth: '300px' }}><div style={{ width: '100%', aspectRatio: '4/3', background: '#f5f5f5', borderRadius: '0px' }}></div></div>
+                      <div style={{ flex: 1, minWidth: '300px', paddingTop: '10px' }}><h4 style={{ fontSize: '1.8rem', marginBottom: '20px', fontWeight: 'bold', lineHeight: 1.2 }}>{String(index + 1).padStart(2, '0')}. {point.title}</h4><p style={{ lineHeight: 2.0, fontSize: '1.1rem' }}>{point.desc}</p></div>
+                    </div>
+                  )) : <p>ポイント情報は準備中です。</p>}
+                </div>
+                <div style={{ height: '100px' }} />
+              </div>
+            </div>
+          )}
+        </>
       )}
     </div>
   );
