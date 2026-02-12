@@ -175,6 +175,36 @@ const ContentsView = ({ navigate }) => {
   return (
     <div className="section-contents">
       <h3 className="section-title">contents</h3>
+      
+      {/* ★追加: item-footerをスマホで左寄せにするスタイル */}
+      <style>{`
+        .item-footer {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-top: 10px;
+        }
+        .item-meta {
+          text-align: left;
+        }
+        .item-meta p {
+          margin: 0;
+          text-align: left;
+        }
+        /* スマホ表示(768px以下)の時に強制的に左寄せ・縦並びにする */
+        @media (max-width: 768px) {
+          .item-footer {
+            flex-direction: column;
+            align-items: flex-start !important; /* 左寄せ */
+            gap: 10px;
+          }
+          .item-link {
+            align-self: flex-start;
+            padding-left: 0 !important; /* パディングを消して端に揃える */
+          }
+        }
+      `}</style>
+
       <div className="project-list-container" style={{ border: '2px solid #000', padding: '0', background: '#fff' }}>
         <ul className="project-list" style={{ listStyle: 'none', margin: 0, padding: 0 }}>
           {projects.map((item, index) => (
@@ -193,12 +223,14 @@ const ContentsView = ({ navigate }) => {
             >
               <div className="item-header"><span className="item-cat" style={{fontSize: '0.8rem', fontWeight:'bold', textTransform:'uppercase'}}>{item.cat} {item.id}</span></div>
               <h4 className="item-title" style={{fontSize: '1.2rem', margin:'5px 0'}}>{item.title}</h4>
-              <div className="item-footer" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '10px' }}>
+              
+              {/* ★修正: クラスでスタイルを制御するように変更 (インラインスタイルのdisplayなどを削除) */}
+              <div className="item-footer">
                 <div className="item-meta">
                   <p className="item-stack" style={{fontSize: '0.8rem', color: '#666'}}>{item.stack}</p>
                   <p className="item-date" style={{fontSize: '0.8rem', color: '#666'}}>{item.date}</p>
                 </div>
-                <div className="item-link" style={{ fontSize: '0.9rem', fontWeight: 'bold' }}>view more →</div>
+                <div className="item-link" style={{ fontSize: '0.9rem', fontWeight: 'bold', padding: '5px' }}>view more →</div>
               </div>
             </li>
           ))}

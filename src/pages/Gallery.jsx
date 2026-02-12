@@ -86,21 +86,36 @@ const Gallery = () => {
       {/* 1. MAIN VIEWER */}
       <div 
         onWheel={handleWheel}
-        // ★修正: パディングを少し減らして（80px -> 60px）、画像をより大きく表示できるように調整
-        style={{ flex: 1, position: 'relative', background: '#f0f0f0', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '60px', overflow: 'hidden' }}
+        style={{ 
+          flex: 1, 
+          position: 'relative', 
+          background: 'transparent', // ★修正: グレー背景を削除(透明に)
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center', 
+          padding: '40px', // 少し余白を持たせる
+          overflow: 'hidden' 
+        }}
       >
         <AnimatePresence mode="wait">
           <motion.img
             key={selectedItem.id}
             src={`${import.meta.env.BASE_URL}${selectedItem.src.replace(/^\//, '')}`}
             alt=""
-            initial={{ opacity: 0, scale: 0.98 }}
+            initial={{ opacity: 0, scale: 0.95 }} // 出現時のスケールも少し控えめに
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            // ★修正: maxではなくwidth/heightを100%にして、親要素(paddingの内側)いっぱいまで広げる
-            // objectFit: 'contain' なので、長辺がパディング端にピタッと合います
-            style={{ width: '100%', height: '100%', objectFit: 'contain', boxShadow: '0 20px 50px rgba(0,0,0,0.1)' }}
+            // ★修正: width/height: 100% ではなく maxWidth/maxHeight で制限
+            // これで画面いっぱいになりすぎず、かつ長辺に合わせて表示されます
+            style={{ 
+              maxWidth: '85%', // 画面の85%のサイズに抑える
+              maxHeight: '85%', 
+              width: 'auto', 
+              height: 'auto', 
+              objectFit: 'contain', 
+              boxShadow: '0 20px 50px rgba(0,0,0,0.1)' 
+            }}
           />
         </AnimatePresence>
       </div>
@@ -110,7 +125,7 @@ const Gallery = () => {
         className="gallery-list-container" 
         onWheel={(e) => e.stopPropagation()} 
         style={{
-          height: '140px', // スマホ用の高さを少し調整
+          height: '140px',
           background: '#fff',
           borderTop: '2px solid #000',
           display: 'flex',
@@ -137,13 +152,13 @@ const Gallery = () => {
             onClick={() => setSelectedId(item.id)}
             style={{ 
               flex: '0 0 auto', 
-              width: '100px', // スマホ用のサムネイル幅
+              width: '100px',
               cursor: 'pointer', 
               opacity: selectedId === item.id ? 1 : 0.4, 
               transition: 'opacity 0.3s', 
               display: 'flex', 
               flexDirection: 'column', 
-              padding: '0' // 余分なパディング削除
+              padding: '0' 
             }}
           >
             <div style={{ width: '100%', aspectRatio: '1/1', background: '#eee', overflow: 'hidden', border: selectedId === item.id ? '2px solid #000' : '1px solid #ddd', position: 'relative' }}>
@@ -159,32 +174,31 @@ const Gallery = () => {
           .gallery-page > div:first-child { padding: 40px !important; } /* Main Viewer */
           
           .gallery-list-container { 
-            width: 250px !important; /* ★修正: 文字がなくなったのでリスト幅を狭く */
+            width: 250px !important;
             height: 100vh !important; 
             border-top: none !important; 
             border-left: 2px solid #000; 
             flex-direction: column !important; 
             overflow-x: hidden !important; 
             overflow-y: auto !important; 
-            align-items: center !important; /* 中央揃え */
+            align-items: center !important; 
             padding-top: 160px !important; 
             padding-bottom: 40px !important;
-            gap: 20px !important; /* サムネイル間の隙間 */
+            gap: 20px !important;
           }
           
           .gallery-list-container > div { 
-            width: 100% !important; /* コンテナ幅に合わせる */
-            height: auto !important; /* ★修正: 高さを固定せず画像の高さなりにする */
+            width: 100% !important; 
+            height: auto !important; 
             flex: 0 0 auto !important;
             flex-direction: column !important; 
             align-items: center; 
-            padding: 0 20px !important; /* 左右に少し余白 */
+            padding: 0 20px !important;
           }
           
-          /* サムネイル画像サイズ */
           .gallery-list-container > div > div:first-child { 
-            width: 100% !important; /* 幅いっぱい */
-            aspect-ratio: 1/1; /* 正方形 */
+            width: 100% !important;
+            aspect-ratio: 1/1;
             height: auto !important; 
           }
         }
