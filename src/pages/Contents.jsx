@@ -76,8 +76,8 @@ const projects = [
     persona: "法学部大学生。東京都内で一人暮らし。公務員試験での合格を目指している。",
     concept: "暮らしと肌を整える",
     points: [
-      { title: "ロゴデザイン", desc: "モチーフは「C」「T」と調律に使用する機械の「チューナー」をモチーフに制作。", img: "cosme01.png" }, // ★ポイント画像
-      { title: "ショップカード", desc: "オンラインサイトへの導入を促す目的で制作しました。", img: "cosme02" } // ★ポイント画像
+      { title: "ロゴデザイン", desc: "モチーフは「C」「T」と調律に使用する機械の「チューナー」をモチーフに制作。", img: "contents/cosme01.png" }, // ★ポイント画像
+      { title: "ショップカード", desc: "オンラインサイトへの導入を促す目的で制作しました。", img: "contents/cosme02.png" } // ★ポイント画像
     ]
   },
   { 
@@ -424,8 +424,8 @@ export default function Contents() {
                     <p style={{ fontWeight: 'bold', marginBottom: '20px', fontSize: '1rem' }}>{selectedProject.cat} / {selectedProject.date}</p>
                     <h2 style={{ fontSize: "clamp(2.5rem, 4vw, 4rem)", lineHeight: 1.0, marginBottom: "60px", letterSpacing: '-0.03em', fontWeight: '800' }}>{selectedProject.title}</h2>
                     <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr', gap: '20px', fontSize: '1rem', marginBottom: '40px' }}>
-                      <div style={{ fontWeight: 'bold', borderBottom: '2px solid #000', paddingBottom: '10px' }}>role</div><div style={{ borderBottom: '1px solid #ddd', paddingBottom: '10px' }}>{selectedProject.role || '-'}</div>
-                      <div style={{ fontWeight: 'bold', borderBottom: '2px solid #000', paddingBottom: '10px' }}>tools</div><div style={{ borderBottom: '1px solid #ddd', paddingBottom: '10px' }}>{selectedProject.tools || '-'}</div>
+                      <div style={{ fontWeight: 'bold', borderBottom: '2px solid #000', paddingBottom: '10px' }}>role</div><div style={{ borderBottom: '1px solid #ddd', paddingBottom: '10px',lineHeight: 1.6}}>{selectedProject.role || '-'}</div>
+                      <div style={{ fontWeight: 'bold', borderBottom: '2px solid #000', paddingBottom: '10px' }}>tools</div><div style={{ borderBottom: '1px solid #ddd', paddingBottom: '10px',lineHeight: 1.6 }}>{selectedProject.tools || '-'}</div>
                       
                       {/* ★ Web Design作品のURL/QR表示エリア (ここに追加！) */}
                       {selectedProject.cat === "Web Design" && selectedProject.url && (

@@ -62,7 +62,7 @@ const Gallery = () => {
       style={{ width: '100vw', height: '100vh', background: '#fff', color: '#000', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}
     >
       
-      {/* ★修正: EXIT位置調整 (transformで微調整してハンバーガーと高さを合わせる) */}
+      {/* EXITボタン */}
       <Link to="/" style={{ 
         position: 'fixed', 
         top: '40px', 
@@ -78,7 +78,7 @@ const Gallery = () => {
         height: '20px', 
         display: 'flex',
         alignItems: 'center',
-        transform: 'translateY(-2px)' // ★微調整: 目視でハンバーガーと中心を合わせる
+        transform: 'translateY(-2px)'
       }}>
         exit
       </Link>
@@ -86,18 +86,21 @@ const Gallery = () => {
       {/* 1. MAIN VIEWER */}
       <div 
         onWheel={handleWheel}
-        style={{ flex: 1, position: 'relative', background: '#f0f0f0', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '80px 20px 20px', overflow: 'hidden' }}
+        // ★修正: パディングを少し減らして（80px -> 60px）、画像をより大きく表示できるように調整
+        style={{ flex: 1, position: 'relative', background: '#f0f0f0', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '60px', overflow: 'hidden' }}
       >
         <AnimatePresence mode="wait">
           <motion.img
             key={selectedItem.id}
             src={`${import.meta.env.BASE_URL}${selectedItem.src.replace(/^\//, '')}`}
-            alt={selectedItem.title}
+            alt=""
             initial={{ opacity: 0, scale: 0.98 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', boxShadow: '0 20px 50px rgba(0,0,0,0.1)' }}
+            // ★修正: maxではなくwidth/heightを100%にして、親要素(paddingの内側)いっぱいまで広げる
+            // objectFit: 'contain' なので、長辺がパディング端にピタッと合います
+            style={{ width: '100%', height: '100%', objectFit: 'contain', boxShadow: '0 20px 50px rgba(0,0,0,0.1)' }}
           />
         </AnimatePresence>
       </div>
@@ -106,26 +109,24 @@ const Gallery = () => {
       <div 
         className="gallery-list-container" 
         onWheel={(e) => e.stopPropagation()} 
-        // ★修正: 横スクロールを確実にする設定 (touchAction: pan-x, flexWrap: nowrap, overflowX: scroll)
         style={{
-          height: '160px',
+          height: '140px', // スマホ用の高さを少し調整
           background: '#fff',
           borderTop: '2px solid #000',
           display: 'flex',
-          flexWrap: 'nowrap', // 改行禁止
-          overflowX: 'scroll', // 確実にスクロールバーを出す(表示は消す)
+          flexWrap: 'nowrap', 
+          overflowX: 'scroll',
           overflowY: 'hidden',
           padding: '20px',
-          gap: '20px',
+          gap: '15px',
           alignItems: 'center',
-          scrollbarWidth: 'none', // Firefox用バー非表示
-          msOverflowStyle: 'none', // IE用バー非表示
-          WebkitOverflowScrolling: 'touch', // iOS慣性スクロール
-          touchAction: 'pan-x', // 横スクロール許可
+          scrollbarWidth: 'none',
+          msOverflowStyle: 'none',
+          WebkitOverflowScrolling: 'touch',
+          touchAction: 'pan-x',
           pointerEvents: 'auto' 
         }}
       >
-        {/* Chrome/Safari用バー非表示スタイル */}
         <style>{`
           .gallery-list-container::-webkit-scrollbar { display: none; }
         `}</style>
@@ -134,17 +135,15 @@ const Gallery = () => {
           <div
             key={item.id}
             onClick={() => setSelectedId(item.id)}
-            // ★修正: flex: 0 0 auto でアイテム幅を固定し、潰れないようにする
             style={{ 
               flex: '0 0 auto', 
-              width: '120px',
+              width: '100px', // スマホ用のサムネイル幅
               cursor: 'pointer', 
               opacity: selectedId === item.id ? 1 : 0.4, 
               transition: 'opacity 0.3s', 
               display: 'flex', 
               flexDirection: 'column', 
-              gap: '8px', 
-              padding: '5px' 
+              padding: '0' // 余分なパディング削除
             }}
           >
             <div style={{ width: '100%', aspectRatio: '1/1', background: '#eee', overflow: 'hidden', border: selectedId === item.id ? '2px solid #000' : '1px solid #ddd', position: 'relative' }}>
@@ -157,27 +156,37 @@ const Gallery = () => {
       <style>{`
         @media (min-width: 769px) {
           .gallery-page { flex-direction: row !important; }
-          .gallery-page > div:first-child { padding: 40px !important; }
+          .gallery-page > div:first-child { padding: 40px !important; } /* Main Viewer */
+          
           .gallery-list-container { 
-            width: 350px !important; 
+            width: 250px !important; /* ★修正: 文字がなくなったのでリスト幅を狭く */
             height: 100vh !important; 
             border-top: none !important; 
             border-left: 2px solid #000; 
             flex-direction: column !important; 
             overflow-x: hidden !important; 
             overflow-y: auto !important; 
-            align-items: stretch !important; 
+            align-items: center !important; /* 中央揃え */
             padding-top: 160px !important; 
-            padding-bottom: 40px !important; 
+            padding-bottom: 40px !important;
+            gap: 20px !important; /* サムネイル間の隙間 */
           }
+          
           .gallery-list-container > div { 
-            width: auto !important;
-            flex: 1 1 auto !important; 
-            flex-direction: row !important; 
+            width: 100% !important; /* コンテナ幅に合わせる */
+            height: auto !important; /* ★修正: 高さを固定せず画像の高さなりにする */
+            flex: 0 0 auto !important;
+            flex-direction: column !important; 
             align-items: center; 
-            height: 80px; 
+            padding: 0 20px !important; /* 左右に少し余白 */
           }
-          .gallery-list-container > div > div:first-child { width: 80px !important; height: 80px !important; flex-shrink: 0; }
+          
+          /* サムネイル画像サイズ */
+          .gallery-list-container > div > div:first-child { 
+            width: 100% !important; /* 幅いっぱい */
+            aspect-ratio: 1/1; /* 正方形 */
+            height: auto !important; 
+          }
         }
       `}</style>
 

@@ -8,13 +8,27 @@ import {
   Scroll,         
   useScroll,
   Text,
+  useTexture, // ★必須: 画像読み込み用
 } from "@react-three/drei";
 import { motion } from "framer-motion"; 
 import { useNavigate } from "react-router-dom";
+import * as THREE from "three"; // ★必須: マッピング設定用
 import "../App.css";
 
 // Preload model
 useGLTF.preload(import.meta.env.BASE_URL + "model.glb");
+
+// --- ★修正: テクスチャ読み込み用コンポーネント ---
+const EnvMap = () => {
+  // .png を読み込む
+  const texture = useTexture(import.meta.env.BASE_URL + "blender-env.png");
+  
+  // ★重要: 環境マップとして正しく反射させるための設定
+  texture.mapping = THREE.EquirectangularReflectionMapping;
+  texture.colorSpace = THREE.SRGBColorSpace;
+
+  return <Environment map={texture} background={false} />;
+};
 
 // --- 3D Model ---
 function Model() {
@@ -161,21 +175,30 @@ const ContentsView = ({ navigate }) => {
   return (
     <div className="section-contents">
       <h3 className="section-title">contents</h3>
-      <div className="project-list-container">
-        <ul className="project-list">
+      <div className="project-list-container" style={{ border: '2px solid #000', padding: '0', background: '#fff' }}>
+        <ul className="project-list" style={{ listStyle: 'none', margin: 0, padding: 0 }}>
           {projects.map((item, index) => (
             <li 
               key={index} 
               className="project-item" 
               onClick={() => navigate('/contents', { state: { targetSlug: item.slug } })}
-              // ★修正: 横方向にも15pxのpaddingを追加 (15px 15px)
-              style={{ cursor: 'pointer', padding: '15px 15px' }}
+              style={{ 
+                cursor: 'pointer', 
+                padding: '1.5rem', 
+                borderBottom: index !== projects.length - 1 ? '1px solid #ddd' : 'none',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '5px'
+              }}
             >
-              <div className="item-header"><span className="item-cat">{item.cat} {item.id}</span></div>
-              <h4 className="item-title">{item.title}</h4>
-              <div className="item-footer">
-                <div className="item-meta"><p className="item-stack">{item.stack}</p><p className="item-date">{item.date}</p></div>
-                <div className="item-link" style={{ padding: '5px' }}><span>view more</span></div>
+              <div className="item-header"><span className="item-cat" style={{fontSize: '0.8rem', fontWeight:'bold', textTransform:'uppercase'}}>{item.cat} {item.id}</span></div>
+              <h4 className="item-title" style={{fontSize: '1.2rem', margin:'5px 0'}}>{item.title}</h4>
+              <div className="item-footer" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '10px' }}>
+                <div className="item-meta">
+                  <p className="item-stack" style={{fontSize: '0.8rem', color: '#666'}}>{item.stack}</p>
+                  <p className="item-date" style={{fontSize: '0.8rem', color: '#666'}}>{item.date}</p>
+                </div>
+                <div className="item-link" style={{ fontSize: '0.9rem', fontWeight: 'bold' }}>view more →</div>
               </div>
             </li>
           ))}
@@ -187,27 +210,98 @@ const ContentsView = ({ navigate }) => {
 
 // --- ProfileView ---
 const ProfileView = ({ navigate }) => (
-  <div className="section-profile">
+  <div className="section-profile" style={{ position: 'relative', zIndex: 5 }}>
     <h3 className="section-title">profile</h3>
-    <div className="profile-container">
-      <motion.div 
-        className="profile-image-wrapper"
-        initial={{ opacity: 0, scale: 0.5, x: -100, rotate: -20, y: "-55%" }}
-        whileInView={{ opacity: 1, scale: 1, x: 0, rotate: 0, y: "-55%" }}
-        transition={{ type: "spring", stiffness: 120, damping: 12, delay: 0.2 }}
-        viewport={{ once: true, amount: 0.3 }}
-        onClick={() => navigate('/profile')}
-        style={{ cursor: 'pointer' }}
-      >
-        <img src={import.meta.env.BASE_URL + "star.png"} alt="Ichihashi Toui" className="profile-img" />
-      </motion.div>
-      <div className="profile-info">
-        <p className="job-title">ichihashi toui</p>
-        <h2 className="profile-name-ja">市橋 冬翔</h2>
-        <p className="profile-name-en">ichihashi.toui@gmail.com</p>
-        <div className="profile-detail"><dl><dt>birth</dt><dd>2004.12.22</dd><dt>location</dt><dd>Aichi, Japan</dd></dl></div>
-        <div className="profile-bio"><p>人の心に響くデザインを心がけています。平面でのデザインだけでなく、Blenderを使用した3DCGでのビジュアル表現にも積極的に取り組んでいます。</p></div>
-        <div className="profile-skills"><p className="skill-label">Software</p><p className="skill-list">Illustrator / Photoshop / Indesign / After Effects / Lightroom /  Figma / Blender / VS Code</p></div>
+    <div className="home-profile-wrapper" style={{ 
+      width: '100%', 
+      margin: '0 auto', 
+      padding: '40px', 
+      background: '#fff', 
+      border: '2px solid #000', 
+      boxSizing: 'border-box'
+    }}>
+      <style>{`
+        .home-profile-content {
+          display: flex;
+          gap: 5%;
+          align-items: center;
+          justify-content: space-between;
+        }
+        .home-profile-img-box {
+          width: 40%;
+          aspect-ratio: 3/4;
+          flex-shrink: 0;
+          background-color: #eee;
+          overflow: hidden;
+          cursor: pointer;
+        }
+        .home-profile-img-box img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          transition: transform 0.6s ease;
+        }
+        .home-profile-img-box:hover img {
+          transform: scale(1.05);
+        }
+        .home-profile-text {
+          flex: 1;
+        }
+        @media (max-width: 768px) {
+          .home-profile-content {
+            flex-direction: column;
+            gap: 40px;
+          }
+          .home-profile-img-box {
+            width: 100%;
+            max-width: 400px;
+            margin: 0 auto;
+          }
+        }
+      `}</style>
+      
+      <div className="home-profile-content">
+        <motion.div 
+          className="home-profile-img-box"
+          initial={{ opacity: 0, y: 50 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+          viewport={{ once: true, amount: 0.3 }}
+          onClick={() => navigate('/profile')}
+        >
+          <img src={import.meta.env.BASE_URL + "star.jpg"} alt="Ichihashi Toui" />
+        </motion.div>
+
+        <motion.div 
+          className="home-profile-text"
+          initial={{ opacity: 0, y: 50 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1], delay: 0.2 }}
+          viewport={{ once: true, amount: 0.3 }}
+        >
+          <p className="job-title" style={{ fontSize: '0.9rem', fontWeight: 'bold', marginBottom: '10px', letterSpacing: '0.1em' }}>GRAPHIC / WEB DESIGNER</p>
+          <h2 className="profile-name-en" style={{ fontSize: 'clamp(2rem, 4vw, 3.5rem)', fontWeight: '900', lineHeight: 1, marginBottom: '10px' }}>ICHIHASHI TOUI</h2>
+          <p className="profile-name-ja" style={{ fontSize: '1rem', color: '#666', marginBottom: '30px' }}>市橋 冬翔</p>
+          
+          <div className="profile-bio" style={{ marginBottom: '30px', lineHeight: 1.8, fontSize: '0.95rem' }}>
+            <p>
+              人の心に響くデザインを心がけています。平面でのデザインだけでなく、
+              Blenderを使用した3DCGでのビジュアル表現にも積極的に取り組んでいます。
+            </p>
+          </div>
+          
+          <dl className="profile-detail" style={{ display: 'grid', gridTemplateColumns: '80px 1fr', gap: '10px', marginBottom: '30px', fontSize: '0.9rem' }}>
+            <dt style={{ fontWeight: 'bold' }}>BIRTH</dt><dd>2004.12.22</dd>
+            <dt style={{ fontWeight: 'bold' }}>LOCATION</dt><dd>Aichi, Japan</dd>
+          </dl>
+
+          <div 
+            onClick={() => navigate('/profile')} 
+            style={{ display: 'inline-block', borderBottom: '1px solid #000', paddingBottom: '5px', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.9rem', letterSpacing: '0.05em' }}
+          >
+            VIEW MORE →
+          </div>
+        </motion.div>
       </div>
     </div>
   </div>
@@ -217,22 +311,68 @@ const ProfileView = ({ navigate }) => (
 const GalleryView = ({ navigate }) => (
   <div className="section-gallery">
     <h3 className="section-title">gallery</h3>
-    <div className="gallery-container">
-      <div className="gallery-item item-main"><div className="img-box"><img src={import.meta.env.BASE_URL + "gallery-12.jpg"} alt="Work" /></div></div>
-      <div className="gallery-item item-sub1"><div className="img-box"><img src={import.meta.env.BASE_URL + "gallery-10.jpg"} alt="Work" /></div></div>
-      <div className="gallery-item item-sub2"><div className="img-box"><img src={import.meta.env.BASE_URL + "gallery-23.jpg"} alt="Work" /></div></div>
-      <div className="gallery-item item-sub3"><div className="img-box"><img src={import.meta.env.BASE_URL + "gallery-14.jpg"} alt="Work" /></div></div>
-      <div className="gallery-item item-sub4"><div className="img-box"><img src={import.meta.env.BASE_URL + "gallery-17.jpg"} alt="Work" /></div></div>
-      <div className="gallery-item item-sub5"><div className="img-box"><img src={import.meta.env.BASE_URL + "gallery-06.jpg"} alt="Work" /></div></div>
-      <div className="gallery-link">
-        <span onClick={() => navigate('/gallery')} style={{ cursor: 'pointer', padding: '20px', display: 'inline-block' }}>view all works <span>→</span></span>
-      </div>
+    {/* ★修正: クラス名を変更し、PCは3列、スマホは2列のグリッドに固定 */}
+    <div className="home-gallery-grid" style={{ 
+      display: 'grid', 
+      gridTemplateColumns: 'repeat(3, 1fr)', // PCデフォルトは3列
+      gap: '20px',
+      width: '100%',
+      boxSizing: 'border-box'
+    }}>
+      <style>{`
+        /* メディアクエリでスマホだけ2列にする */
+        @media (max-width: 768px) {
+          .home-gallery-grid {
+            grid-template-columns: repeat(2, 1fr) !important;
+            gap: 10px !important;
+          }
+        }
+      `}</style>
+
+      {/* 画像データ (6枚) */}
+      {[
+        { src: "gallery-12.jpg", id: 1 },
+        { src: "gallery-10.jpg", id: 2 },
+        { src: "gallery-23.jpg", id: 3 },
+        { src: "gallery-14.jpg", id: 4 },
+        { src: "gallery-17.jpg", id: 5 },
+        { src: "gallery-06.jpg", id: 6 },
+      ].map((item) => (
+        <div 
+          key={item.id} 
+          onClick={() => navigate('/gallery')}
+          style={{ 
+            aspectRatio: '1/1', 
+            border: '2px solid #000', 
+            background: '#fff',
+            overflow: 'hidden',
+            cursor: 'pointer',
+            display: 'block'
+          }}
+        >
+          <img 
+            src={import.meta.env.BASE_URL + item.src} 
+            alt="Work" 
+            style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+          />
+        </div>
+      ))}
+    </div>
+    <div className="gallery-link" style={{ textAlign: 'right', padding: '30px 5vw 0' }}>
+      <span onClick={() => navigate('/gallery')} style={{ cursor: 'pointer', padding: '10px 0', display: 'inline-block', fontWeight: 'bold', fontSize: '1.2rem' }}>
+        view all works <span>→</span>
+      </span>
     </div>
   </div>
 );
 
-const Footer = () => ( <footer className="footer-section"><p className="copyright">@2026 Ichihashi Toui / Nagoya,JP</p></footer> );
+const Footer = () => (
+  <footer className="footer-section">
+    <p className="copyright">@2026 Ichihashi Toui / Nagoya,JP</p>
+  </footer>
+);
 
+// --- ContentWrapper ---
 const ContentWrapper = ({ setPages, children }) => {
   const ref = useRef();
   useEffect(() => {
@@ -249,17 +389,23 @@ const ContentWrapper = ({ setPages, children }) => {
   return <div ref={ref} style={{ width: "100vw" }}>{children}</div>;
 };
 
+// --- Main App ---
 export default function Home() {
   const [pages, setPages] = useState(7); 
   const navigate = useNavigate();
 
   return (
     <div className="container">
-      <Canvas dpr={[1, 1.5]} camera={{ position: [0, 0, 12], fov: 50 }} style={{ touchAction: 'pan-y' }} >
+      <Canvas 
+        dpr={[1, 1.5]} 
+        camera={{ position: [0, 0, 12], fov: 50 }}
+        style={{ touchAction: 'pan-y' }} 
+      >
         <Suspense fallback={null}>
           <ScrollControls pages={pages} damping={0.1}>
             <BackgroundText />
             <Model />
+            
             <Scroll html style={{ width: '100%', height: '100%', zIndex: 10, pointerEvents: 'none' }}>
               <ContentWrapper setPages={setPages}>
                 <FirstView navigate={navigate} />
@@ -270,11 +416,12 @@ export default function Home() {
               </ContentWrapper>
             </Scroll>
           </ScrollControls>
+          
           <ambientLight intensity={0.5} />
           <directionalLight position={[10, 10, 5]} intensity={1} color="#ffffff" />
           
-          {/* ★修正: 元のテクスチャに戻しました */}
-          <Environment files={import.meta.env.BASE_URL + "blender-env.jpeg"} background={false} />
+          {/* ★修正: .png対応版のEnvMapコンポーネントを使用 */}
+          <EnvMap />
         </Suspense>
       </Canvas>
     </div>
