@@ -1,9 +1,18 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import '../App.css'; 
 
 const Profile = () => {
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth <= 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
   const profileData = {
     nameEn: "ICHIHASHI TOUI",
     nameJa: "市橋 冬翔",
@@ -12,11 +21,9 @@ const Profile = () => {
     location: "Aichi, Japan",
     email: "ichihashi.toui@gmail.com",
     
-    bio: `表面的なビジュアル表現だけでなく、その背後にある歴史的背景や論理的な裏付けを重視してデザインに取り組んでいます。
-
-Webデザインにおける実装力（React, Three.js）と、グラフィックデザインにおける構成力（スイス・スタイル）を掛け合わせ、感性と論理のバランスが取れたクリエイティブを目指しています。
-
-チーム制作においては、全体を俯瞰し、多角的な視点から分析を行う「参謀役」として、プロジェクトの品質向上に貢献することを好みます。`,
+    bio: `初めまして。市橋冬翔と申します。目標に向かって着実に歩みを進めることを大切にしています。
+学生生活では、Webデザインやグラフィックデザインといった平面でのデザインだけでなく、Blenderを使用した3DCGでのビジュアル表現にも積極的に取り組んでいます。
+プライベートでは、バンドでベースを弾くことや音楽鑑賞、スポーツ観戦を楽しんでいます。特に毛皮のマリーズやDAVID BOWIEなど、ジャンルに縛られず表現するアーティストの姿勢が、クリエイティブな発想の刺激になっています。`,
     
     skills: [
       { category: "Design", items: ["Illustrator", "Photoshop", "Indesign", "Lightroom", "Figma"] },
@@ -25,9 +32,10 @@ Webデザインにおける実装力（React, Three.js）と、グラフィッ�
     ],
     
     history: [
-      { year: "2023.04", title: "デザイン専門学校 入学", desc: "グラフィックデザインの基礎、色彩理論、構成論、Webデザインを専攻。" },
-      { year: "2025.11", title: "株式会社IT Advisor インターンシップ", desc: "1ヶ月間、Webサイトリニューアルプロジェクトに参加。リーダーとして進行管理および実装を担当。" },
-      { year: "2026.03", title: "卒業予定", desc: "" },
+      { year: "2023.03", title: "愛知県立丹羽高校卒業",  },
+      { year: "2023.04", title: "HAL名古屋グラフィック専攻入学",  },
+      { year: "2025.10", title: "株式会社ITアドバイザーインターンシップ", desc: "1ヶ月間、Webサイトリニューアルプロジェクトに参加。リーダーとして進行管理およびを担当。" },
+      { year: "2026.現在", title: "在学中", desc: "" },
     ]
   };
 
@@ -36,7 +44,7 @@ Webデザインにおける実装力（React, Three.js）と、グラフィッ�
     minHeight: '100vh',
     background: '#fff',
     color: '#000',
-    padding: '120px 5vw 100px', 
+    padding: '100px 5vw 60px', 
     fontFamily: '"Helvetica Neue", Arial, sans-serif',
     boxSizing: 'border-box',
   };
@@ -63,20 +71,14 @@ Webデザインにおける実装力（React, Three.js）と、グラフィッ�
   const contentStyle = {
     flex: 1,
     minWidth: '300px', 
-    fontSize: '1.1rem',
+    fontSize: '1rem',
     lineHeight: 2.0, 
     fontWeight: '400',
   };
 
   return (
-    <motion.div 
-      style={containerStyle}
-      initial={{ opacity: 0, y: 30 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -30 }}
-      transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-    >
-      {/* ★修正: EXIT位置調整 */}
+    <>
+      {/* ★修正: Contents.jsxと完全に同じ設定値に戻しました (top:40px, left:5vw) */}
       <Link to="/" style={{ 
         position: 'fixed', 
         top: '40px', 
@@ -85,99 +87,120 @@ Webデザインにおける実装力（React, Three.js）と、グラフィッ�
         fontWeight: 'bold', 
         fontSize: '1rem', 
         textDecoration: 'none', 
-        zIndex: 1000,
+        zIndex: 2000, 
         textTransform: 'uppercase', 
         letterSpacing: '0.05em',
-        padding: '0 20px',
-        height: '20px',
-        display: 'flex',
-        alignItems: 'center',
-        transform: 'translateY(-2px)' // ★微調整
+        padding: '0px 20px' // 当たり判定用
       }}>
         exit
       </Link>
 
-      <div style={{ marginBottom: '140px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap-reverse', gap: '40px' }}>
-        <div>
-          <p style={{ fontWeight: 'bold', marginBottom: '20px', fontSize: '1.2rem' }}>{profileData.role}</p>
-          <h1 style={{ 
-            fontSize: 'clamp(3.5rem, 9vw, 8rem)', 
-            lineHeight: 0.9, 
-            fontWeight: '900', 
-            letterSpacing: '-0.04em',
-            marginLeft: '-0.05em', 
-            textTransform: 'uppercase'
-          }}>
-            {profileData.nameEn.split(' ').map((word, i) => (
-              <span key={i} style={{ display: 'block' }}>{word}</span>
-            ))}
-          </h1>
-          <p style={{ marginTop: '20px', fontSize: '1.2rem', fontWeight: '500' }}>{profileData.nameJa}</p>
-        </div>
-        <motion.div
-          initial={{ opacity: 0, scale: 0.8, rotate: -10 }}
-          animate={{ opacity: 1, scale: 1, rotate: 0 }}
-          transition={{ duration: 0.8, delay: 0.3, ease: "backOut" }}
-          style={{ width: 'clamp(150px, 30vw, 300px)', flexShrink: 0 }}
-        >
-          <img src={import.meta.env.BASE_URL + "star.png"} alt="Profile Icon" style={{ width: '100%', height: 'auto', filter: 'drop-shadow(0 10px 20px rgba(0,0,0,0.15))' }} />
-        </motion.div>
-      </div>
+      <motion.div 
+        style={containerStyle}
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -30 }}
+        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+      >
+        {/* 1. HERO AREA */}
+        <div style={{ 
+          marginBottom: '80px', 
+          display: 'flex', 
+          // ★修正: PCは横並び(画像左)、スマホは縦並び(画像上)
+          flexDirection: isMobile ? 'column' : 'row', 
+          alignItems: isMobile ? 'flex-start' : 'flex-end', // スマホは左揃え
+          gap: '40px',
+          textAlign: 'left' // 文字は常に左揃え
+        }}>
+          
+          {/* ★修正: 画像を先に配置 (PCでは左、スマホでは上に来る) */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8, rotate: -10 }}
+            animate={{ opacity: 1, scale: 1, rotate: 0 }}
+            transition={{ duration: 0.8, delay: 0.3, ease: "backOut" }}
+            style={{ 
+              // ★修正: スマホの時は幅いっぱい(100%)、PCの時は適度なサイズ
+              width: isMobile ? '100%' : 'clamp(200px, 30vw, 400px)', 
+              flexShrink: 0,
+              marginBottom: isMobile ? '20px' : '0'
+            }}
+          >
+            <img src={import.meta.env.BASE_URL + "ichihashi-1.png"} alt="Profile Icon" style={{ width: '100%', height: 'auto', filter: 'drop-shadow(0 10px 20px rgba(0,0,0,0.15))' }} />
+          </motion.div>
 
-      {/* 2. BASIC INFO */}
-      <section style={sectionStyle}>
-        <div style={labelStyle}>Information</div>
-        <div style={contentStyle}>
-          <div style={{ display: 'grid', gridTemplateColumns: '100px 1fr', gap: '15px' }}>
-            <strong>Birth</strong> <span>{profileData.birth}</span>
-            <strong>Location</strong> <span>{profileData.location}</span>
-            <strong>Contact</strong> <span>{profileData.email}</span>
+          {/* テキスト部分 */}
+          <div style={{ width: isMobile ? '100%' : 'auto' }}>
+            <p style={{ fontWeight: 'bold', marginBottom: '20px', fontSize: '1.2rem' }}>{profileData.role}</p>
+            <h1 style={{ 
+              fontSize: 'clamp(3.5rem, 9vw, 8rem)', 
+              lineHeight: 0.9, 
+              fontWeight: '900', 
+              letterSpacing: '-0.04em',
+              marginLeft: isMobile ? 0 : '-0.05em',
+              textTransform: 'uppercase'
+            }}>
+              {profileData.nameEn.split(' ').map((word, i) => (
+                <span key={i} style={{ display: 'block' }}>{word}</span>
+              ))}
+            </h1>
+            <p style={{ marginTop: '20px', fontSize: '1.2rem', fontWeight: '500' }}>{profileData.nameJa}</p>
           </div>
-        </div>
-      </section>
 
-      {/* 3. BIOGRAPHY */}
-      <section style={sectionStyle}>
-        <div style={labelStyle}>Biography</div>
-        <div style={contentStyle}>
-          <p style={{ whiteSpace: 'pre-wrap' }}>{profileData.bio}</p>
         </div>
-      </section>
 
-      {/* 4. SKILLS */}
-      <section style={sectionStyle}>
-        <div style={labelStyle}>Skills & Tools</div>
-        <div style={contentStyle}>
-          {profileData.skills.map((skill, index) => (
-            <div key={index} style={{ marginBottom: '40px' }}>
-              <h4 style={{ fontSize: '1.2rem', marginBottom: '10px', fontWeight: 'bold', borderBottom: '1px solid #ddd', paddingBottom: '5px', display:'inline-block' }}>
-                {skill.category}
-              </h4>
-              <p>{skill.items.join(" / ")}</p>
+        {/* 2. BASIC INFO */}
+        <section style={sectionStyle}>
+          <div style={labelStyle}>Information</div>
+          <div style={contentStyle}>
+            <div style={{ display: 'grid', gridTemplateColumns: '100px 1fr', gap: '15px' }}>
+              <strong>Birth</strong> <span>{profileData.birth}</span>
+              <strong>Location</strong> <span>{profileData.location}</span>
+              <strong>Contact</strong> <span>{profileData.email}</span>
             </div>
-          ))}
-        </div>
-      </section>
+          </div>
+        </section>
 
-      {/* 5. HISTORY */}
-      <section style={sectionStyle}>
-        <div style={labelStyle}>History</div>
-        <div style={contentStyle}>
-          {profileData.history.map((item, index) => (
-            <div key={index} style={{ marginBottom: '40px', display: 'flex', gap: '30px', alignItems: 'flex-start' }}>
-              <div style={{ fontWeight: 'bold', minWidth: '80px', paddingTop: '5px' }}>{item.year}</div>
-              <div>
-                <h4 style={{ fontWeight: 'bold', marginBottom: '10px', fontSize: '1.1rem' }}>{item.title}</h4>
-                <p style={{ fontSize: '1rem', color: '#666' }}>{item.desc}</p>
+        {/* 3. BIOGRAPHY */}
+        <section style={sectionStyle}>
+          <div style={labelStyle}>Biography</div>
+          <div style={contentStyle}>
+            <p style={{ whiteSpace: 'pre-wrap' }}>{profileData.bio}</p>
+          </div>
+        </section>
+
+        {/* 4. SKILLS */}
+        <section style={sectionStyle}>
+          <div style={labelStyle}>Skills & Tools</div>
+          <div style={contentStyle}>
+            {profileData.skills.map((skill, index) => (
+              <div key={index} style={{ marginBottom: '40px' }}>
+                <h4 style={{ fontSize: '1rem',  fontWeight: 'bold', display:'inline-block' }}>
+                  {skill.category}
+                </h4>
+                <p>{skill.items.join(" / ")}</p>
               </div>
-            </div>
-          ))}
-        </div>
-      </section>
+            ))}
+          </div>
+        </section>
 
-      <div style={{ height: '100px' }} />
+        {/* 5. HISTORY */}
+        <section style={sectionStyle}>
+          <div style={labelStyle}>History</div>
+          <div style={contentStyle}>
+            {profileData.history.map((item, index) => (
+              <div key={index} style={{ marginBottom: '40px', display: 'flex', gap: '20px', alignItems: 'flex-start' }}>
+                <div style={{ fontWeight: 'bold', minWidth: '80px', }}>{item.year}</div>
+                <div>
+                  <h4 style={{ fontWeight: 'bold', marginBottom: '10px', fontSize: '1rem' }}>{item.title}</h4>
+                  <p style={{ fontSize: '1rem', color: '#666' }}>{item.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
 
-    </motion.div>
+      </motion.div>
+    </>
   );
 };
 

@@ -5,26 +5,26 @@ import '../App.css';
 
 const Gallery = () => {
   const galleryData = [
-    { id: 1, src: "/gallery-12.jpg", title: "Untitled Work 01", cat: "Graphic", year: "2025" },
-    { id: 2, src: "/gallery-10.jpg", title: "Exhibition A", cat: "Poster", year: "2025" },
-    { id: 3, src: "/gallery-23.jpg", title: "Blue Abstract", cat: "Art", year: "2024" },
-    { id: 4, src: "/gallery-14.jpg", title: "Typography Study", cat: "Type", year: "2025" },
-    { id: 5, src: "/gallery-17.jpg", title: "Package Design", cat: "Product", year: "2025" },
-    { id: 6, src: "/gallery-06.jpg", title: "Magazine Layout", cat: "Editorial", year: "2024" },
-    { id: 7, src: "/gallery-12.jpg", title: "Work 07", cat: "Graphic", year: "2023" },
-    { id: 8, src: "/gallery-10.jpg", title: "Work 08", cat: "Graphic", year: "2023" },
-    { id: 9, src: "/gallery-23.jpg", title: "Work 09", cat: "Art", year: "2023" },
-    { id: 10, src: "/gallery-14.jpg", title: "Work 10", cat: "Type", year: "2023" },
-    { id: 11, src: "/gallery-17.jpg", title: "Work 11", cat: "Product", year: "2022" },
-    { id: 12, src: "/gallery-06.jpg", title: "Work 12", cat: "Editorial", year: "2022" },
-    { id: 13, src: "/gallery-12.jpg", title: "Work 13", cat: "Graphic", year: "2022" },
-    { id: 14, src: "/gallery-10.jpg", title: "Work 14", cat: "Graphic", year: "2022" },
-    { id: 15, src: "/gallery-23.jpg", title: "Work 15", cat: "Art", year: "2021" },
-    { id: 16, src: "/gallery-14.jpg", title: "Work 16", cat: "Type", year: "2021" },
-    { id: 17, src: "/gallery-17.jpg", title: "Work 17", cat: "Product", year: "2021" },
-    { id: 18, src: "/gallery-06.jpg", title: "Work 18", cat: "Editorial", year: "2021" },
-    { id: 19, src: "/gallery-12.jpg", title: "Work 19", cat: "Graphic", year: "2020" },
-    { id: 20, src: "/gallery-10.jpg", title: "Work 20", cat: "Graphic", year: "2020" },
+    { id: 1, src: "gallery/kotomi-6.jpg",},
+    { id: 2, src: "/gallery-10.jpg",},
+    { id: 3, src: "/gallery-23.jpg",},
+    { id: 4, src: "/gallery-14.jpg",},
+    { id: 5, src: "/gallery-17.jpg",},
+    { id: 6, src: "gallery/kotomi-2.jpg",},
+    { id: 7, src: "/gallery-12.jpg",},
+    { id: 8, src: "gallery/kotomi-3.jpg",},
+    { id: 9, src: "gallery/gallery-19.jpg",},
+    { id: 10, src: "gallery/gallery-05.jpg",},
+    { id: 11, src: "gallery/kotomi-4.jpg",},
+    { id: 12, src: "gallery/kotomi-1.jpg",},
+    { id: 13, src: "gallery/gallery-08.jpg",},
+    { id: 14, src: "gallery/gallery-02.jpg",},
+    { id: 15, src: "gallery/gallery-11.jpg",},
+    { id: 16, src: "gallery/gallery-20.jpg",},
+    { id: 17, src: "gallery/gallery-21.jpg",},
+    { id: 18, src: "gallery/gallery-01.jpg",},
+    { id: 19, src: "gallery/gallery-22.jpg",},
+    { id: 20, src: "gallery/gallery-16.jpg",},
   ];
 
   const [selectedId, setSelectedId] = useState(galleryData[0].id);
@@ -100,10 +100,6 @@ const Gallery = () => {
             style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', boxShadow: '0 20px 50px rgba(0,0,0,0.1)' }}
           />
         </AnimatePresence>
-        <div style={{ position: 'absolute', bottom: '20px', left: '20px', background: 'rgba(255,255,255,0.9)', padding: '10px 15px', borderRadius: '4px', pointerEvents: 'none' }}>
-          <p style={{ fontSize: '0.8rem', fontWeight: 'bold', margin: 0 }}>{selectedItem.cat} / {selectedItem.year}</p>
-          <h2 style={{ fontSize: '1.2rem', fontWeight: '900', margin: '5px 0 0', textTransform: 'uppercase' }}>{selectedItem.title}</h2>
-        </div>
       </div>
 
       {/* 2. SELECTION LIST */}
@@ -154,7 +150,6 @@ const Gallery = () => {
             <div style={{ width: '100%', aspectRatio: '1/1', background: '#eee', overflow: 'hidden', border: selectedId === item.id ? '2px solid #000' : '1px solid #ddd', position: 'relative' }}>
               <img src={`${import.meta.env.BASE_URL}${item.src.replace(/^\//, '')}`} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
             </div>
-            <p style={{ fontSize: '0.75rem', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontWeight: selectedId === item.id ? 'bold' : 'normal' }}>{item.title}</p>
           </div>
         ))}
       </div>
